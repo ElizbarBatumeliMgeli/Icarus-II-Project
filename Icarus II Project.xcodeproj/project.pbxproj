@@ -33,6 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				1A62FE592FBB1AC0002D01F7 /* Icarus II Project */,
+				A12CDDE52FC45C960033B3B4 /* Frameworks */,
 				1A62FE582FBB1AC0002D01F7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +44,13 @@
 				1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A12CDDE52FC45C960033B3B4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,6 +102,9 @@
 			);
 			mainGroup = 1A62FE4E2FBB1AC0002D01F7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A12CDDE42FC45C240033B3B4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1A62FE582FBB1AC0002D01F7 /* Products */;
 			projectDirPath = "";
@@ -253,7 +264,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
+				DEVELOPMENT_TEAM = ZD48B39XU7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -285,7 +296,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
+				DEVELOPMENT_TEAM = ZD48B39XU7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -332,6 +343,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A12CDDE42FC45C240033B3B4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 12.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 1A62FE4F2FBB1AC0002D01F7 /* Project object */;
 }
