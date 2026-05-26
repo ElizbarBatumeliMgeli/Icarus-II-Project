@@ -31,3 +31,6 @@ extension Match {
         return nil
     }
 }
+
+
+    // history inside the match - is what we already did, where, with who, storing all the data of the activity
