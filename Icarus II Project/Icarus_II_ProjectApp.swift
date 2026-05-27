@@ -11,7 +11,7 @@ import SwiftUI
 struct Icarus_II_ProjectApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SignInView()
         }
     }
 }
