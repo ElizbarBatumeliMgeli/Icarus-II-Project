@@ -4,6 +4,15 @@
 //
 //  Created by Aleksandra Stupiec on 26/05/26.
 //
+//  ⚠️ DUPLICATE / MERGE NOTE:
+//  This VM expects the Codable Firestore `User` model that used to live at
+//  `Icarus II Project/Models/User.swift`. The merge with main replaced that
+//  file with main's UI-only `ProfileUser` struct, so this file will NOT
+//  compile until either:
+//    - the Codable `User` is restored (as a separate file or alongside
+//      `ProfileUser`), or
+//    - this VM is rewritten against `ProfileUser`.
+//
 
 import Foundation
 import FirebaseFirestore

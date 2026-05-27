@@ -4,6 +4,12 @@
 //
 //  Created by Aleksandra Stupiec on 21/05/26.
 //
+//  ⚠️ DUPLICATE NOTE:
+//  This file duplicates `Icarus II Project/Views/Profile/ProfileDeckView.swift` (from main).
+//  Main's `ProfileDeckView` is the one to keep — it's the new profile screen UI.
+//  This file is left in place as a reference for the data-layer integration
+//  (Firestore-backed `Card` cards on the profile).
+//
 
 import SwiftUI
 

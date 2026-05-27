@@ -4,6 +4,13 @@
 //
 //  Created by Aleksandra Stupiec on 25/05/26.
 //
+//  ⚠️ DUPLICATE NOTE:
+//  This file duplicates `Icarus II Project/Models/DeckCard.swift` (from main).
+//  Same concept (a card in the deck), different shape:
+//    - `DeckCard` is a UI-only model used by the views.
+//    - `Card` (this file) is the Codable/Firestore model used by the data layer.
+//  TODO: decide which to keep, or map between them, when wiring the UI to Firestore.
+//
 
 import Foundation
 

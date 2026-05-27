@@ -4,6 +4,12 @@
 //
 //  Created by Aleksandra Stupiec on 22/05/26.
 //
+//  ⚠️ DUPLICATE NOTE:
+//  This file duplicates `Icarus II Project/Views/Feed/FeedCardView.swift` (from main).
+//  Both render a single card; the main version (`FeedCardView`) is the one to keep —
+//  it ties into the new feed/matches UI. This file remains so we can port the
+//  data-layer wiring (Firestore-backed `Card`) into the main UI later.
+//
 
 import SwiftUI
 
