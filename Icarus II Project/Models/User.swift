@@ -11,7 +11,7 @@ import Foundation
 struct User: Identifiable, Codable, Hashable, Sendable {
     let id: String
     var displayName: String
-    var avatarURL: URL?
-    var createdAt: Date?
-    var updatedAt: Date?
+    var avatarURL: URL? = nil
+    var createdAt: Date? = nil
+    var updatedAt: Date? = nil
 }
