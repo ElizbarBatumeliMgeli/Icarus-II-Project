@@ -6,13 +6,35 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1A53CA012FC71BA70097DB2A /* blaBlaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */; };
+		1A53CA022FC71BA70097DB2A /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */; };
+		1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1A53CA052FC71C260097DB2A /* DEAL! icon.icon */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
+		1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = blaBlaApp.swift; sourceTree = "<group>"; };
+		1A53CA052FC71C260097DB2A /* DEAL! icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "DEAL! icon.icon"; sourceTree = "<group>"; };
 		1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Icarus II Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1A53CA042FC71BF10097DB2A /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Icarus-II-Project-Info.plist",
+			);
+			target = 1A62FE562FBB1AC0002D01F7 /* Icarus II Project */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A62FE592FBB1AC0002D01F7 /* Icarus II Project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1A53CA042FC71BF10097DB2A /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */,
+			);
 			path = "Icarus II Project";
 			sourceTree = "<group>";
 		};
@@ -32,6 +54,9 @@
 		1A62FE4E2FBB1AC0002D01F7 = {
 			isa = PBXGroup;
 			children = (
+				1A53CA052FC71C260097DB2A /* DEAL! icon.icon */,
+				1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */,
+				1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */,
 				1A62FE592FBB1AC0002D01F7 /* Icarus II Project */,
 				1A62FE582FBB1AC0002D01F7 /* Products */,
 			);
@@ -109,6 +134,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +145,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A53CA012FC71BA70097DB2A /* blaBlaApp.swift in Sources */,
+				1A53CA022FC71BA70097DB2A /* AppRootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
