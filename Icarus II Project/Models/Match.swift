@@ -7,7 +7,8 @@
 
 import Foundation
 
-///  request, acceptance, or block
+// One user (the matcher) expressing interest in another user's card.
+// A single card can have many matches — one per interested user.
 struct Match: Identifiable, Codable, Hashable, Sendable {
     enum Status: String, Codable, Hashable, Sendable {
         case pending
@@ -16,18 +17,24 @@ struct Match: Identifiable, Codable, Hashable, Sendable {
     }
 
     let id: String
-    let requesterID: String
-    let recipientID: String
+    let cardID: String
+    let ownerID: String
+    let matcherID: String
     var status: Status
-    var createdAt: Date?
-    var respondedAt: Date?
+    var createdAt: Date? = nil
+    var respondedAt: Date? = nil
 }
 
 extension Match {
-    /// Given one participant's id, return the id of the other side of the match.
+    // Deterministic id so each (card, matcher) pair has at most one match document.
+    static func id(cardID: String, matcherID: String) -> String {
+        "\(cardID)_\(matcherID)"
+    }
+
+    // Given one participant's id, return the id of the other side of the match.
     func otherParticipant(relativeTo userID: String) -> String? {
-        if requesterID == userID { return recipientID }
-        if recipientID == userID { return requesterID }
+        if ownerID == userID { return matcherID }
+        if matcherID == userID { return ownerID }
         return nil
     }
 }

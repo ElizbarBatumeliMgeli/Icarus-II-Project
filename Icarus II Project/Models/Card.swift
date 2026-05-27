@@ -17,8 +17,8 @@ struct Card: Identifiable, Codable, Hashable, Sendable {
     var startDate: Date
     var endDate: Date
     var location: String
-    var createdAt: Date?
-    var updatedAt: Date?
+    var createdAt: Date? = nil
+    var updatedAt: Date? = nil
 }
 
 extension Card {
