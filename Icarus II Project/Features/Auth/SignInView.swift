@@ -19,8 +19,9 @@ struct SignInView: View {
                     ProgressView("Loading…")
 
                 case .signedIn:
-                    if let profile = authManager.currentUserProfile {
-                        signedInView(profile: profile)
+                    if authManager.currentUserProfile != nil {
+//                        signedInView(profile: profile)
+                        AppRootView()
                     }
 
                 case .signedOut:
@@ -88,10 +89,11 @@ struct SignInView: View {
 
             SignInWithAppleButton(.continue) { request in
                 request.requestedScopes = [.fullName, .email]
+                request.nonce = authManager.prepareNonce()
             } onCompletion: { result in
                 authManager.handleAuthorization(result: result)
             }
-            .signInWithAppleButtonStyle(.black)
+            .signInWithAppleButtonStyle(.white)
             .frame(height: 50)
             .padding(.horizontal, 32)
         }
