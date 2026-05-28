@@ -9,6 +9,8 @@ import Foundation
 import FirebaseFirestore
 
 // One-shot end-to-end check that Firestore is reachable: write a doc, read it back, and surface either the read value or the error to the view
+
+/// WAS WORKING WITH PREVIOUS CONTENTVIEW - WONT RUN RN !!!
 @MainActor
 @Observable
 final class FirebaseTestViewModel {

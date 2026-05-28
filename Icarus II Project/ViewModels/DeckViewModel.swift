@@ -11,8 +11,8 @@ import SwiftUI
 @Observable
 final class DeckViewModel {
     // OLA NOTE:
-    // This ViewModel drives the UI and proxies CRUD through `DeckCardRepository`.
-    // Persistence target: Firestore `cards` collection (one doc per DeckCard).
+    // This ViewModel drives the UI and proxies CRUD through `DeckCardRepository` (cards)
+    // and `MatchRepository` (matches). Persistence target: Firestore.
 
     var user = User(id: "test-user-1", firstName: "Marco", lastName: "Rocco", avatarColorHex: "D3D3D3")
     // OLA: replace with the signed-in user from your auth/profile once it lands
@@ -21,16 +21,24 @@ final class DeckViewModel {
     var currentOwnerID: String = "test-user-1"
 
     private let repository = DeckCardRepository()
+    private let matchRepository = MatchRepository()
     var isLoading: Bool = false
     var errorMessage: String?
 
-    // Mock seed data — visible until the first `fetchCards()` returns from Firestore.
+    // EL - My own cards (my personal deck). Populated by fetchCards(). The profile screen uses this.
+    // Mock seed data — visible until the first fetchCards() returns from Firestore.
     var cards: [DeckCard] = [
         DeckCard(title: "Design a\ntable", category: "Food", dateText: "Tomorrow", location: "Naples", color: Color(.orange)),
         DeckCard(title: "Museum\nvisit", category: "Art", dateText: "Weekend", location: "Naples", color: Color(hex: "D8D8D8")),
         DeckCard(title: "Coffee\nwalk", category: "Social", dateText: "Today", location: "Centro", color: Color(hex: "5F5E69")),
         DeckCard(title: "Movie\nnight", category: "Fun", dateText: "Friday", location: "Home", color: Color(hex: "D1D1D1"))
     ]
+
+    // EL - The swipe feed: cards from people I'm connected to (never my own), populated by loadFeed(); MainFeedView should read this instead of `cards`.
+    var feedCards: [DeckCard] = []
+
+    // EL - Cards I've matched with (the ones I swiped right on), populated by loadMatchedCards(); MatchesView should read this.
+    var matchedCards: [DeckCard] = []
 
     // UI-friendly mapping used in the profile deck (adjusts color for readability).
     var profileCards: [DeckCard] {
@@ -51,10 +59,9 @@ final class DeckViewModel {
     var selectedCard: DeckCard?
     var isEditorPresented = false
 
-    // MARK: - Data loading
+    // MARK: - My deck
 
-    // Fetches the current user's cards from Firestore and replaces `cards`
-    // Fire-and-forget from the UI; updates `isLoading`/`errorMessage` as it runs
+    // EL - Loads MY OWN cards into `cards` (used by the profile deck). Fire-and-forget from the UI.
     func fetchCards() {
         Task { await loadFromRepository() }
     }
@@ -71,23 +78,42 @@ final class DeckViewModel {
         }
     }
 
+    // MARK: - Feed (cards from my connections)
+
+    // EL - Loads the swipe feed into `feedCards` (cards from my connections, excluding my own); call this when the feed appears — it relies on `user.connections`, which becomes the real list once auth/profile load is in.
+    func loadFeed() {
+        Task { await loadFeedFromRepository() }
+    }
+
+    private func loadFeedFromRepository() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            feedCards = try await repository.feed(fromOwnerIDs: user.connections)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - Editor entry points
 
-    // Opens the editor in "create" mode.
+    // EL - Opens the editor to create a new card.
     func addCard() {
         selectedCard = nil
         isEditorPresented = true
     }
 
-    // Opens the editor in "edit" mode for an existing card (or first card as fallback).
+    // EL - Opens the editor to edit an existing card (falls back to the first card).
     func editCard(_ card: DeckCard? = nil) {
         selectedCard = card ?? cards.first
         isEditorPresented = true
     }
 
-    // MARK: - Mutations
+    // MARK: - Card mutations (my own deck)
 
-    // Upserts a card locally for instant UI feedback, then persists to Firestore in the background.
+    // EL - Saves a card (create or update). Updates `cards` immediately for instant UI, then persists.
     func save(card: DeckCard) {
         var toSave = card
         if toSave.ownerID.isEmpty { toSave.ownerID = currentOwnerID }
@@ -110,7 +136,7 @@ final class DeckViewModel {
         }
     }
 
-    // Removes a card locally for instant UI feedback, then deletes from Firestore in the background
+    // EL - Deletes one of my own cards. Removes it from `cards` immediately, then deletes from Firestore.
     func delete(_ card: DeckCard) {
         cards.removeAll { $0.id == card.id }
         Task {
@@ -122,16 +148,66 @@ final class DeckViewModel {
         }
     }
 
-    // Handles a swipe action (dismisses current card from the feed).
-    // TODO(matches): once the matches flow is wired, route the verdict through `MatchRepository`.
+    // MARK: - Swipe actions (on the feed)
+
+    // EL - RIGHT / like swipe: records a match between me (the matcher) and the card's owner, removes it from `feedCards`, makes it appear in `matchedCards`, and saves in the background (no owner approval — the swipe is the match).
+    func match(_ card: DeckCard) {
+        feedCards.removeAll { $0.id == card.id }
+
+        let newMatch = Match(
+            id: Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID),
+            cardID: card.id.uuidString,
+            ownerID: card.ownerID,
+            matcherID: currentOwnerID,
+            status: .accepted,
+            createdAt: Date()
+        )
+
+        Task {
+            do {
+                try await matchRepository.create(newMatch)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    // EL - LEFT / dismiss swipe. Just removes the card from `feedCards` locally — no match, nothing saved.
+    func dismiss(_ card: DeckCard) {
+        feedCards.removeAll { $0.id == card.id }
+    }
+
+    // EL - Old local-only swipe, kept so existing feed code still compiles; for the real flow use match(_:) on a right swipe and dismiss(_:) on a left swipe instead of this.
     func swipe(_ card: DeckCard) {
         if let index = cards.firstIndex(of: card) {
             cards.remove(at: index)
         }
     }
 
-    // Randomizes the order of cards shown in the feed.
-    // Local UX
+    // MARK: - Matched cards (for MatchesView)
+
+    // EL - Loads the cards I've matched with into `matchedCards` (reads my matches, then fetches those cards); call this when MatchesView appears.
+    func loadMatchedCards() {
+        Task { await loadMatchedCardsFromRepository() }
+    }
+
+    private func loadMatchedCardsFromRepository() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let myMatches = try await matchRepository.forMatcher(currentOwnerID)
+            let cardIDs = myMatches.map { $0.cardID }
+            matchedCards = try await repository.cards(withIDs: cardIDs)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Misc
+
+    // Purely local UX.
     func shuffle() {
         cards.shuffle()
     }
