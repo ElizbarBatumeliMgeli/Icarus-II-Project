@@ -8,8 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-/// Loads, creates, and updates user profile documents, and manages mutual
-/// connections between users via a permanent, shareable code.
+// Loads, creates, and updates user profile documents, and manages mutual  connections between users via a permanent, shareable code
 @MainActor
 @Observable
 final class UserViewModel {
@@ -22,7 +21,7 @@ final class UserViewModel {
 
     // MARK: - Load / Create / Update
 
-    /// Load a user by id (nil if no document with that id exists).
+    // Load a user by id (nil if no document with that id exists).
     func load(id: String) async {
         isLoading = true
         errorMessage = nil
@@ -36,8 +35,8 @@ final class UserViewModel {
         }
     }
 
-    /// Create a user document keyed off `user.id`.
-    /// Assigns a unique permanent connection code if the incoming user has none.
+    // Create a user document keyed off `user.id`
+    // Assigns a unique permanent connection code if the incoming user has none
     func create(_ user: User) async {
         isLoading = true
         errorMessage = nil
@@ -60,7 +59,7 @@ final class UserViewModel {
         }
     }
 
-    /// Merge updates onto an existing user document.
+    // Merge updates onto an existing user document.
     func update(_ user: User) async {
         isLoading = true
         errorMessage = nil
@@ -79,8 +78,7 @@ final class UserViewModel {
 
     // MARK: - Connections
 
-    /// Connects the current user to whoever owns `code`. The link is mutual:
-    /// both user documents get the other's id added to their `connections`.
+    // Connects the current user to whoever owns `code`. The link is mutual as both user documents get the other's id added to their `connections`
     func connect(usingCode code: String) async {
         guard let me = user else {
             errorMessage = "No current user loaded."
@@ -140,9 +138,8 @@ final class UserViewModel {
         }
     }
 
-    /// Loads the full User records for the current user's connections.
-    /// NOTE: Firestore `in` queries cap at 10 ids — chunk this if a user can
-    /// have more connections than that.
+    // Loads the full User records for the current user's connections
+    // NOTE: Firestore `in` queries cap at 10 ids — chunk this if a user can have more connections than that
     func loadConnections() async throws -> [User] {
         guard let me = user, !me.connections.isEmpty else { return [] }
         let snapshot = try await collection
