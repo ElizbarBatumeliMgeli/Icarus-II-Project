@@ -17,3 +17,4 @@ DerivedData/
 # Editor backups
 *~
 *.swp
+GoogleService-Info.plist

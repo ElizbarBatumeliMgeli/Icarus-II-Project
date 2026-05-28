@@ -10,6 +10,9 @@
 		1A53CA012FC71BA70097DB2A /* blaBlaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */; };
 		1A53CA022FC71BA70097DB2A /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */; };
 		1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1A53CA052FC71C260097DB2A /* DEAL! icon.icon */; };
+		A1D5898E2FC81BE800649DE9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898D2FC81BE800649DE9 /* FirebaseAuth */; };
+		A1D589902FC81BE800649DE9 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898F2FC81BE800649DE9 /* FirebaseCore */; };
+		A1D589922FC81BE800649DE9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D589912FC81BE800649DE9 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,22 +22,9 @@
 		1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Icarus II Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1A53CA042FC71BF10097DB2A /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Icarus-II-Project-Info.plist",
-			);
-			target = 1A62FE562FBB1AC0002D01F7 /* Icarus II Project */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A62FE592FBB1AC0002D01F7 /* Icarus II Project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1A53CA042FC71BF10097DB2A /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */,
-			);
 			path = "Icarus II Project";
 			sourceTree = "<group>";
 		};
@@ -45,6 +35,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1D589902FC81BE800649DE9 /* FirebaseCore in Frameworks */,
+				A1D5898E2FC81BE800649DE9 /* FirebaseAuth in Frameworks */,
+				A1D589922FC81BE800649DE9 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +83,9 @@
 			);
 			name = "Icarus II Project";
 			packageProductDependencies = (
+				A1D5898D2FC81BE800649DE9 /* FirebaseAuth */,
+				A1D5898F2FC81BE800649DE9 /* FirebaseCore */,
+				A1D589912FC81BE800649DE9 /* FirebaseFirestore */,
 			);
 			productName = "Icarus II Project";
 			productReference = 1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */;
@@ -119,6 +115,9 @@
 			);
 			mainGroup = 1A62FE4E2FBB1AC0002D01F7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A1D5898C2FC81BE800649DE9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1A62FE582FBB1AC0002D01F7 /* Products */;
 			projectDirPath = "";
@@ -284,7 +283,7 @@
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
+				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -317,7 +316,7 @@
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
+				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -362,6 +361,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1D5898C2FC81BE800649DE9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.14.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1D5898D2FC81BE800649DE9 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1D5898C2FC81BE800649DE9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A1D5898F2FC81BE800649DE9 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1D5898C2FC81BE800649DE9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A1D589912FC81BE800649DE9 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1D5898C2FC81BE800649DE9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1A62FE4F2FBB1AC0002D01F7 /* Project object */;
 }
