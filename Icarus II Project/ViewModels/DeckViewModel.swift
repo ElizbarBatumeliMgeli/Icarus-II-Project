@@ -7,17 +7,24 @@
 
 import SwiftUI
 
+@MainActor
 @Observable
 final class DeckViewModel {
     // OLA NOTE:
-    // This ViewModel is temporary/local-only. You're free to replace/extend it.
-    // Purpose: drive the UI and proxy calls to your cloud/backend.
-    // How it should act: expose async load/save/delete APIs, publish derived UI state.
+    // This ViewModel drives the UI and proxies CRUD through `DeckCardRepository`.
+    // Persistence target: Firestore `cards` collection (one doc per DeckCard).
 
-    var user = ProfileUser(name: "Marco Rocco", avatarColor: Color(hex: "D3D3D3")) // OLA: replace with the signed-in user from your auth/profile.
+    var user = User(id: "test-user-1", firstName: "Marco", lastName: "Rocco", avatarColorHex: "D3D3D3")
+    // OLA: replace with the signed-in user from your auth/profile once it lands
+    // Owner id used to scope card queries. Hardcoded until Sign in with Apple is wired up
+    // TODO(auth): replace with `Auth.auth().currentUser?.uid` once `AuthService` is in place
+    var currentOwnerID: String = "test-user-1"
 
-    // TODO(OLA): Replace this mocked array with data fetched from your cloud source.
-    // Load into `cards` in `fetchCards()` below and publish changes as needed.
+    private let repository = DeckCardRepository()
+    var isLoading: Bool = false
+    var errorMessage: String?
+
+    // Mock seed data — visible until the first `fetchCards()` returns from Firestore.
     var cards: [DeckCard] = [
         DeckCard(title: "Design a\ntable", category: "Food", dateText: "Tomorrow", location: "Naples", color: Color(.orange)),
         DeckCard(title: "Museum\nvisit", category: "Art", dateText: "Weekend", location: "Naples", color: Color(hex: "D8D8D8")),
@@ -26,7 +33,6 @@ final class DeckViewModel {
     ]
 
     // UI-friendly mapping used in the profile deck (adjusts color for readability).
-    // OLA: Keep/adjust if your backend color palette differs.
     var profileCards: [DeckCard] {
         cards.map {
             DeckCard(
@@ -43,63 +49,90 @@ final class DeckViewModel {
 
     // UI editor state (used by the sheet).
     var selectedCard: DeckCard?
-    var isEditorPresented = false // Controls the editor sheet presentation.
+    var isEditorPresented = false
 
     // MARK: - Data loading
-    /// OLA: Fetch the latest cards for the current user from your backend.
-    /// Call this on app start and when you need to refresh.
+
+    // Fetches the current user's cards from Firestore and replaces `cards`
+    // Fire-and-forget from the UI; updates `isLoading`/`errorMessage` as it runs
     func fetchCards() {
-        // TODO(OLA): Implement cloud fetch here.
-        // Example (pseudo):
-        // self.cards = try await api.fetchCards(for: user)
-        // For now we keep the mocked data defined above.
+        Task { await loadFromRepository() }
     }
 
-    /// Opens the editor in "create" mode.
-    /// OLA: No persistence here; saving happens in save(card:).
+    private func loadFromRepository() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            cards = try await repository.fetch(ownerID: currentOwnerID)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Editor entry points
+
+    // Opens the editor in "create" mode.
     func addCard() {
         selectedCard = nil
         isEditorPresented = true
     }
 
-    /// Opens the editor in "edit" mode for an existing card (or first card as fallback).
+    // Opens the editor in "edit" mode for an existing card (or first card as fallback).
     func editCard(_ card: DeckCard? = nil) {
         selectedCard = card ?? cards.first
         isEditorPresented = true
     }
 
+    // MARK: - Mutations
+
+    // Upserts a card locally for instant UI feedback, then persists to Firestore in the background.
     func save(card: DeckCard) {
-        // TODO(OLA): Upsert this card in your backend (create if new, update if existing).
-        if let index = cards.firstIndex(where: { $0.id == card.id }) {
-            cards[index] = card
+        var toSave = card
+        if toSave.ownerID.isEmpty { toSave.ownerID = currentOwnerID }
+
+        if let index = cards.firstIndex(where: { $0.id == toSave.id }) {
+            cards[index] = toSave
         } else {
-            cards.insert(card, at: 0)
+            cards.insert(toSave, at: 0)
         }
 
         selectedCard = nil
         isEditorPresented = false
+
+        Task {
+            do {
+                try await repository.upsert(toSave)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
-    /// Removes a card from the local list.
-    /// OLA: Also delete it from your backend.
+    // Removes a card locally for instant UI feedback, then deletes from Firestore in the background
     func delete(_ card: DeckCard) {
-        // TODO(OLA): Delete this card in your backend as well.
         cards.removeAll { $0.id == card.id }
+        Task {
+            do {
+                try await repository.delete(id: card.id)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
-    /// Handles a swipe action (dismisses current card from the feed).
-    /// OLA: Optionally record this interaction in your backend (e.g., liked/dismissed).
+    // Handles a swipe action (dismisses current card from the feed).
+    // TODO(matches): once the matches flow is wired, route the verdict through `MatchRepository`.
     func swipe(_ card: DeckCard) {
-        // TODO(OLA): Optionally persist swipe/decision state to your backend.
         if let index = cards.firstIndex(of: card) {
             cards.remove(at: index)
         }
     }
 
-    /// Randomizes the order of cards shown in the feed.
-    /// OLA: Purely local UX; you likely don't need to sync this.
+    // Randomizes the order of cards shown in the feed.
+    // Local UX
     func shuffle() {
         cards.shuffle()
     }
 }
-
