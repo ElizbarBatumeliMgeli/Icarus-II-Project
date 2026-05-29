@@ -23,6 +23,41 @@ final class DeckCardRepository {
         return try snapshot.documents.map { try $0.data(as: DeckCard.self) }
     }
 
+    // Load the feed: every card owned by any of `ownerIDs` (i.e. the current user's connections).
+    // Firestore `in` queries cap at 10 values, so we split into chunks and merge the results.
+    func feed(fromOwnerIDs ownerIDs: [String]) async throws -> [DeckCard] {
+        guard !ownerIDs.isEmpty else { return [] }
+        var result: [DeckCard] = []
+        for chunk in Self.chunked(ownerIDs, size: 10) {
+            let snapshot = try await collection
+                .whereField("ownerID", in: chunk)
+                .getDocuments()
+            result += try snapshot.documents.map { try $0.data(as: DeckCard.self) }
+        }
+        return result
+    }
+
+    // Load specific cards by their document ids — used to turn a list of matched card ids into cards.
+    // Same 10-value `in` limit, so we chunk here too.
+    func cards(withIDs ids: [String]) async throws -> [DeckCard] {
+        guard !ids.isEmpty else { return [] }
+        var result: [DeckCard] = []
+        for chunk in Self.chunked(ids, size: 10) {
+            let snapshot = try await collection
+                .whereField(FieldPath.documentID(), in: chunk)
+                .getDocuments()
+            result += try snapshot.documents.map { try $0.data(as: DeckCard.self) }
+        }
+        return result
+    }
+
+    // Splits an array into sub-arrays of at most `size` elements (for chunked `in` queries).
+    private static func chunked<T>(_ array: [T], size: Int) -> [[T]] {
+        stride(from: 0, to: array.count, by: size).map {
+            Array(array[$0..<Swift.min($0 + size, array.count)])
+        }
+    }
+
     /// Insert or update a card. Uses `card.id.uuidString` as the Firestore document id.
     /// Fills `createdAt` on first write and always bumps `updatedAt`.
     func upsert(_ card: DeckCard) async throws {
