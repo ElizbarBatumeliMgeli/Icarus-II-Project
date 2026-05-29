@@ -58,7 +58,7 @@ struct MainFeedView: View {
 
                     Spacer(minLength: height * 0.055)
 
-                    if viewModel.cards.isEmpty {
+                    if viewModel.feedCards.isEmpty {
                         EmptyFeedView(width: width, height: cardHeight)
                         Spacer()
                     } else {
@@ -75,7 +75,7 @@ struct MainFeedView: View {
                                 .rotationEffect(.degrees(4.4))
                                 .offset(x: width * 0.025, y: -height * 0.004)
 
-                            if let second = viewModel.cards.dropFirst().first {
+                            if let second = viewModel.feedCards.dropFirst().first {
                                 FeedCardBackView(
                                     card: second,
                                     width: cardWidth,
@@ -84,12 +84,12 @@ struct MainFeedView: View {
                                 .zIndex(0)
                             }
 
-                            if let first = viewModel.cards.first {
+                            if let first = viewModel.feedCards.first {
                                 FeedCardView(
                                     card: first,
                                     width: cardWidth,
                                     height: cardHeight,
-                                    onSwipe: { viewModel.swipe(first) } // OLA: persist swipe/decision if needed (e.g., dismissed/liked)
+                                    onSwipe: { viewModel.match(first) } // OLA: persist swipe/decision if needed (e.g., dismissed/liked)
                                 )
                                 .zIndex(10)
                             }
@@ -106,8 +106,8 @@ struct MainFeedView: View {
 
                         HStack {
                             PhysicalXButton(size: iconSize) {
-                                if let card = viewModel.cards.first {
-                                    viewModel.swipe(card) // OLA: treat as a dismiss; optionally persist to backend.
+                                if let card = viewModel.feedCards.first {
+                                    viewModel.dismiss(card) // OLA: treat as a dismiss; optionally persist to backend.
                                 }
                             }
                             Spacer()
@@ -119,8 +119,8 @@ struct MainFeedView: View {
                             Spacer()
 
                             PhysicalHeartButton(size: iconSize) {
-                                if let card = viewModel.cards.first {
-                                    viewModel.swipe(card) // OLA: treat as an approve/like; optionally persist to backend.
+                                if let card = viewModel.feedCards.first {
+                                    viewModel.match(card) // OLA: treat as an approve/like; optionally persist to backend.
                                 }
                             }
                         }
@@ -131,6 +131,18 @@ struct MainFeedView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await viewModel.reloadFeed()
+        }
+        .refreshable {
+            await viewModel.reloadFeed()
+        }
+        .onChange(of: viewModel.user.connections) { _ in
+            Task { await viewModel.reloadFeed() }
+        }
+        .onChange(of: viewModel.currentOwnerID) { _ in
+            Task { await viewModel.reloadFeed() }
+        }
     }
 }
 
