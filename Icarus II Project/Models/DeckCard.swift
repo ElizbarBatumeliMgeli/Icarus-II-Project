@@ -100,3 +100,34 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
         )
     }
 }
+extension DeckCard {
+    private enum CodingKeys: String, CodingKey {
+        case id, ownerID, title, ownerName, tags, dateText, location, colorHex, createdAt, updatedAt
+    }
+
+    // Tolerant decoder: missing fields fall back to sensible defaults so older or partial documents don't fail to load.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+
+        if let uuid = try c.decodeIfPresent(UUID.self, forKey: .id) {
+            self.id = uuid
+        } else if let idString = try c.decodeIfPresent(String.self, forKey: .id), let uuid = UUID(uuidString: idString) {
+            self.id = uuid
+        } else {
+            // Fallback to a generated UUID so the card can render even if the stored id is missing.
+            // Prefer ensuring the document contains an `id` field equal to its documentID.
+            self.id = UUID()
+        }
+
+        self.ownerID = try c.decodeIfPresent(String.self, forKey: .ownerID) ?? ""
+        self.title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
+        self.ownerName = try c.decodeIfPresent(String.self, forKey: .ownerName) ?? "Marco\nRocco"
+        self.tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        self.dateText = try c.decodeIfPresent(String.self, forKey: .dateText) ?? ""
+        self.location = try c.decodeIfPresent(String.self, forKey: .location) ?? ""
+        self.colorHex = try c.decodeIfPresent(String.self, forKey: .colorHex) ?? "D8D8D8"
+        self.createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt)
+        self.updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt)
+    }
+}
+

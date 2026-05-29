@@ -19,6 +19,8 @@ final class DeckViewModel {
     // Owner id used to scope card queries. Hardcoded until Sign in with Apple is wired up
     // TODO(auth): replace with `Auth.auth().currentUser?.uid` once `AuthService` is in place
     var currentOwnerID: String = "test-user-1"
+    // For development: include my own cards in the feed when there are no connections
+    var showOwnCardsInFeedForTesting: Bool = true
 
     private let repository = DeckCardRepository()
     private let matchRepository = MatchRepository()
@@ -85,13 +87,28 @@ final class DeckViewModel {
         Task { await loadFeedFromRepository() }
     }
 
+    // Async variant for views that want to await the refresh (e.g., .task or .refreshable)
+    func reloadFeed() async {
+        await loadFeedFromRepository()
+    }
+
     private func loadFeedFromRepository() async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
         do {
-            feedCards = try await repository.feed(fromOwnerIDs: user.connections)
+            // If we have connection IDs, load only from them; otherwise, load everything and exclude my own.
+            if !user.connections.isEmpty {
+                feedCards = try await repository.feed(fromOwnerIDs: user.connections)
+            } else {
+                // Fallback: global feed minus my own cards
+                var all = try await repository.all()
+                if !showOwnCardsInFeedForTesting {
+                    all.removeAll { $0.ownerID == currentOwnerID }
+                }
+                feedCards = all
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -130,6 +147,7 @@ final class DeckViewModel {
         Task {
             do {
                 try await repository.upsert(toSave)
+                await loadFeedFromRepository()
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -212,3 +230,4 @@ final class DeckViewModel {
         cards.shuffle()
     }
 }
+

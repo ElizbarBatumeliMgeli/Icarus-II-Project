@@ -23,6 +23,12 @@ final class DeckCardRepository {
         return try snapshot.documents.map { try $0.data(as: DeckCard.self) }
     }
 
+    // Load all cards (no filtering). Useful as a simple global feed or a fallback when connections are empty.
+    func all() async throws -> [DeckCard] {
+        let snapshot = try await collection.getDocuments()
+        return try snapshot.documents.map { try $0.data(as: DeckCard.self) }
+    }
+
     // Load the feed: every card owned by any of `ownerIDs` (i.e. the current user's connections).
     // Firestore `in` queries cap at 10 values, so we split into chunks and merge the results.
     func feed(fromOwnerIDs ownerIDs: [String]) async throws -> [DeckCard] {
@@ -74,3 +80,4 @@ final class DeckCardRepository {
         try await collection.document(id.uuidString).delete()
     }
 }
+
