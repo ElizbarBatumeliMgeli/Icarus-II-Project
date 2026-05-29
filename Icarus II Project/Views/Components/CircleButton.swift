@@ -10,9 +10,11 @@ import SwiftUI
 struct CircleIconButton: View {
     let systemName: String
     let size: CGFloat
+    var action: (() -> Void)? = nil
 
     var body: some View {
         Button {
+            action?()
         } label: {
             Image(systemName: systemName)
                 .font(.system(size: size * 0.42, weight: .regular))

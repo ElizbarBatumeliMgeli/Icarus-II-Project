@@ -26,16 +26,19 @@ final class AppleAuthManager {
     var errorMessage: String?
     var authState: AuthState = .loading
 
+    private let repository: AuthRepository
+
     /// The raw nonce generated for the current sign-in attempt.
     /// Needed to create the Firebase credential after Apple returns.
     private(set) var currentNonce: String?
 
-    init() {
-       Task {
-            if let savedUserID = KeychainHelper.loadUserID() {
-                self.currentUserProfile = LocalProfileStore.shared.fetchProfile(for: savedUserID)
-                await checkCredentialState(userID: savedUserID)
-           } else {
+    init(repository: AuthRepository = DefaultAuthRepository()) {
+        self.repository = repository
+        Task {
+            if let cachedProfile = repository.fetchCurrentSessionProfile() {
+                self.currentUserProfile = cachedProfile
+                await checkCredentialState(userID: cachedProfile.userID)
+            } else {
                self.authState = .signedOut
             }
         }
@@ -119,9 +122,7 @@ final class AppleAuthManager {
 
             self.currentUserProfile = newProfile
             self.authState = .signedIn
-
-            LocalProfileStore.shared.saveProfile(newProfile)
-            KeychainHelper.save(userID: userID)
+            self.repository.saveSession(profile: newProfile)
 
             logger.info("First login successful. Captured full name: \(newProfile.formattedFullName). Captured email: \(newProfile.email ?? "n/a").")
 
@@ -129,8 +130,9 @@ final class AppleAuthManager {
             // Returning user — Apple only provides the userID.
             logger.info("Returning user login. UserID: \(userID)")
 
-            if let cachedProfile = LocalProfileStore.shared.fetchProfile(for: userID) {
+            if let cachedProfile = repository.fetchProfile(for: userID) {
                 self.currentUserProfile = cachedProfile
+                self.repository.saveSession(profile: cachedProfile) // ensures keychain is updated if needed
             } else {
                 let minimalProfile = AppleUserProfile(
                     userID: userID,
@@ -138,10 +140,9 @@ final class AppleAuthManager {
                     lastName: nil,
                     email: nil)
                 self.currentUserProfile = minimalProfile
-                LocalProfileStore.shared.saveProfile(minimalProfile)
+                self.repository.saveSession(profile: minimalProfile)
                 logger.warning("Missed Profile in cache")
             }
-            KeychainHelper.save(userID: userID)
             self.authState = .signedIn
         }
     }
@@ -153,7 +154,7 @@ final class AppleAuthManager {
         FirebaseAuthService.signOut()
 
         // Clear local data
-        KeychainHelper.deleteUserID()
+        repository.clearSession()
         self.currentUserProfile = nil
         self.authState = .signedOut
     }

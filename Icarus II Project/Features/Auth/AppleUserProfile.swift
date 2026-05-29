@@ -15,9 +15,12 @@ struct AppleUserProfile: Codable, Sendable {
     let email: String?
     
     var formattedFullName: String {
-        let first = firstName ?? ""
-        let last = lastName ?? ""
-        let combined = "\(first) \(last)".trimmingCharacters(in: .whitespaces)
-        return combined.isEmpty ? "Unknown Name" : combined
+        var components = PersonNameComponents()
+        components.givenName = firstName
+        components.familyName = lastName
+        
+        let formatter = PersonNameComponentsFormatter()
+        let formatted = formatter.string(from: components).trimmingCharacters(in: .whitespaces)
+        return formatted.isEmpty ? "Unknown Name" : formatted
     }
 }

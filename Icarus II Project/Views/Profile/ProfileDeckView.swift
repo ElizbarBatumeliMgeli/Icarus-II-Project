@@ -10,6 +10,7 @@ import SwiftUI
 struct ProfileDeckView: View {
     @Bindable var viewModel: DeckViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppleAuthManager.self) var authManager
     @State private var isDeckEditing: Bool = false
 
     var body: some View {
@@ -108,6 +109,9 @@ struct ProfileDeckView: View {
                                 .buttonStyle(.plain)
 
                                 CircleIconButton(systemName: "square.and.arrow.up", size: icon)
+                                CircleIconButton(systemName: "trash", size: icon) {
+                                    Task { await authManager.logout() }
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity)

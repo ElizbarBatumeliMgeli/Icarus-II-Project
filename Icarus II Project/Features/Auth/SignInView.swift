@@ -8,63 +8,12 @@
 import SwiftUI
 import AuthenticationServices
 
+/// A pure UI component responsible for displaying the "Create Account" screen.
+/// It relies on the AppleAuthManager environment object to handle the actual login process.
 struct SignInView: View {
-    @State private var authManager = AppleAuthManager()
+    @Environment(AppleAuthManager.self) var authManager
 
     var body: some View {
-        NavigationStack {
-            Group {
-                switch authManager.authState {
-                case .loading:
-                    ProgressView("Loading…")
-
-                case .signedIn:
-                    if authManager.currentUserProfile != nil {
-//                        signedInView(profile: profile)
-                        AppRootView()
-                    }
-
-                case .signedOut:
-                    signedOutView
-                }
-            }
-            .navigationTitle("Onboarding")
-        }
-    }
-
-    // MARK: - Signed In
-
-    private func signedInView(profile: AppleUserProfile) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.crop.circle.fill.badge.checkmark")
-                .font(.system(size: 80))
-                .foregroundStyle(.green, .blue)
-
-            Text("Profile Saved")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-
-            Text(profile.formattedFullName)
-                .font(.largeTitle.bold())
-
-            if let email = profile.email {
-                Text(email)
-                    .font(.subheadline)
-            }
-
-            Button(role: .destructive) {
-                Task { await authManager.logout() }
-            } label: {
-                Text("Clear Local Data (Logout)")
-            }
-            .buttonStyle(.bordered)
-            .padding(.top, 20)
-        }
-    }
-
-    // MARK: - Signed Out
-
-    private var signedOutView: some View {
         VStack(spacing: 30) {
             VStack(spacing: 16) {
                 Image(systemName: "applelogo")
@@ -102,4 +51,5 @@ struct SignInView: View {
 
 #Preview {
     SignInView()
+        .environment(AppleAuthManager())
 }

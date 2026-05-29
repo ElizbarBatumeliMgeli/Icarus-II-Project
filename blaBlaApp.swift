@@ -25,7 +25,7 @@ struct blaBlaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SignInView()
+            AppSessionView()
         }
     }
 }
