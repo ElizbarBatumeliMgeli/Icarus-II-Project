@@ -19,10 +19,10 @@ final class DeckViewModel {
     // TODO(OLA): Replace this mocked array with data fetched from your cloud source.
     // Load into `cards` in `fetchCards()` below and publish changes as needed.
     var cards: [DeckCard] = [
-        DeckCard(title: "Design a\ntable", category: "Food", dateText: "Tomorrow", location: "Naples", color: Color(.orange)),
-        DeckCard(title: "Museum\nvisit", category: "Art", dateText: "Weekend", location: "Naples", color: Color(hex: "D8D8D8")),
-        DeckCard(title: "Coffee\nwalk", category: "Social", dateText: "Today", location: "Centro", color: Color(hex: "5F5E69")),
-        DeckCard(title: "Movie\nnight", category: "Fun", dateText: "Friday", location: "Home", color: Color(hex: "D1D1D1"))
+//        DeckCard(title: "Design a\ntable", category: "Food", dateText: "Tomorrow", location: "Naples", color: Color(.orange)),
+//        DeckCard(title: "Museum\nvisit", category: "Art", dateText: "Weekend", location: "Naples", color: Color(hex: "D8D8D8")),
+//        DeckCard(title: "Coffee\nwalk", category: "Social", dateText: "Today", location: "Centro", color: Color(hex: "5F5E69")),
+//        DeckCard(title: "Movie\nnight", category: "Fun", dateText: "Friday", location: "Home", color: Color(hex: "D1D1D1"))
     ]
 
     // UI-friendly mapping used in the profile deck (adjusts color for readability).
@@ -44,6 +44,8 @@ final class DeckViewModel {
     // UI editor state (used by the sheet).
     var selectedCard: DeckCard?
     var isEditorPresented = false // Controls the editor sheet presentation.
+    
+    
 
     // MARK: - Data loading
     /// OLA: Fetch the latest cards for the current user from your backend.
@@ -55,11 +57,35 @@ final class DeckViewModel {
         // For now we keep the mocked data defined above.
     }
 
-    /// Opens the editor in "create" mode.
-    /// OLA: No persistence here; saving happens in save(card:).
+    // Add this property near your other UI states in DeckViewModel
+    var draftCard: DeckCard?
+
+    // Update addCard() to create the inline draft instead of opening the sheet
     func addCard() {
-        selectedCard = nil
-        isEditorPresented = true
+        draftCard = DeckCard(
+            title: "",
+            ownerName: user.name,
+            category: "Food", // Default fallback
+            dateText: "Today", // Default fallback
+            location: "",
+            color: Color(hex: "D8D8D8")
+        )
+    }
+
+    /// Saves the inline draft card to the main list and stops drafting
+    func saveDraft() {
+        guard let draft = draftCard else { return }
+        
+        // 1. Insert or update the card in the main list
+        save(card: draft)
+        
+        // 2. Setting this to nil stops the drafting UI from rendering
+        draftCard = nil
+    }
+
+    /// Cancels the inline editing session and stops drafting
+    func cancelDraft() {
+        draftCard = nil
     }
 
     /// Opens the editor in "edit" mode for an existing card (or first card as fallback).
@@ -94,6 +120,8 @@ final class DeckViewModel {
         if let index = cards.firstIndex(of: card) {
             cards.remove(at: index)
         }
+        
+        
     }
 
     /// Randomizes the order of cards shown in the feed.

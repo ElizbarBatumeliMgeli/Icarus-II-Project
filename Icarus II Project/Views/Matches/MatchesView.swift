@@ -61,21 +61,40 @@ struct MatchesView: View {
                     .padding(.top, height * 0.035)
 
                     ScrollView {
-                        LazyVStack(spacing: width * 0.06) {
-                            ForEach(cardsForSelectedTab) { card in
-                                Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                        expandedCard = card
-                                    }
-                                } label: {
-                                    MatchRowCardView(card: card, width: width)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.horizontal, horizontal)
-                        .padding(.top, height * 0.02)
-                        .padding(.bottom, height * 0.04)
+                        if cardsForSelectedTab.isEmpty {
+                                                VStack(spacing: height * 0.02) {
+                                                    Spacer()
+                                                    
+                                                    Image(systemName: selectedTab == .pending ? "person.2.slash" : "hand.thumbsdown")
+                                                        .font(.system(size: width * 0.15))
+                                                        .foregroundStyle(.white.opacity(0.3))
+                                                        
+                                                    Text(selectedTab == .pending ? "No pending matches." : "No deals yet.")
+                                                        .font(.custom("Nohemi-Medium", fixedSize: width * 0.055))
+                                                        .foregroundStyle(.white.opacity(0.6))
+                                                        
+                                                    Spacer()
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                            } else {
+                                                ScrollView {
+                                                    LazyVStack(spacing: width * 0.06) {
+                                                        ForEach(cardsForSelectedTab) { card in
+                                                            Button {
+                                                                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                                                    expandedCard = card
+                                                                }
+                                                            } label: {
+                                                                MatchRowCardView(card: card, width: width)
+                                                            }
+                                                            .buttonStyle(.plain)
+                                                        }
+                                                    }
+                                                    .padding(.horizontal, horizontal)
+                                                    .padding(.top, height * 0.02)
+                                                    .padding(.bottom, height * 0.04)
+                                                }
+                                            }
                     }
 
                     Spacer(minLength: 0)
