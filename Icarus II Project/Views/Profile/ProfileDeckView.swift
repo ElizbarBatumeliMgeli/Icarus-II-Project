@@ -10,8 +10,9 @@ import SwiftUI
 struct ProfileDeckView: View {
     @Bindable var viewModel: DeckViewModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppleAuthManager.self) var authManager
     @State private var isDeckEditing: Bool = false
+    
+    @Environment(UserViewModel.self) var userViewModel
 
     var body: some View {
         GeometryReader { proxy in
@@ -107,11 +108,8 @@ struct ProfileDeckView: View {
                                         )
                                 }
                                 .buttonStyle(.plain)
-
+                                // TODO(EL): This button should be changed to use ShareLink, calling userViewModel.user?.connectionLink and unwrap it.
                                 CircleIconButton(systemName: "square.and.arrow.up", size: icon)
-                                CircleIconButton(systemName: "trash", size: icon) {
-                                    Task { await authManager.logout() }
-                                }
                             }
                         }
                         .frame(maxWidth: .infinity)

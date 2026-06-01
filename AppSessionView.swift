@@ -35,3 +35,5 @@ struct AppSessionView: View {
 #Preview {
     AppSessionView()
 }
+
+// the link that is in profile acts as an application opener and code inserter, so link should open the app and automatically trigger the func that adds user to the connections list =) 

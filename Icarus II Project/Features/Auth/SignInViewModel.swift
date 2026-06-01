@@ -90,6 +90,29 @@ final class AppleAuthManager {
 
                     // Save profile locally (same as before)
                     self.saveProfileLocally(credential: credential, userID: userID)
+                    
+                    // --- Firestore Integration ---
+                    let profileRepo = ProfileRepository()
+                    if let existingUser = try await profileRepo.fetch(id: userID) {
+                        logger.info("User \(userID) already exists in Firestore: \(existingUser.displayName)")
+                    } else {
+                        logger.info("User \(userID) not found in Firestore. Creating new profile...")
+                        
+                        // Apple only provides the name on the very first login.
+                        // If it's empty, we fall back to our local Keychain/UserDefaults cache!
+                        let firstName = credential.fullName?.givenName ?? self.currentUserProfile?.firstName ?? ""
+                        let lastName = credential.fullName?.familyName ?? self.currentUserProfile?.lastName ?? ""
+                        let code = try await profileRepo.uniqueConnectionCode()
+                        
+                        let newUser = User(
+                            id: userID,
+                            firstName: firstName,
+                            lastName: lastName,
+                            connectionCode: code
+                        )
+                        try await profileRepo.create(newUser)
+                        logger.info("Successfully created Firestore profile for \(userID) with code \(code).")
+                    }
 
                 } catch {
                     self.errorMessage = "Firebase sign-in failed: \(error.localizedDescription)"
@@ -117,32 +140,18 @@ final class AppleAuthManager {
                 userID: userID,
                 firstName: nameComponents.givenName,
                 lastName: nameComponents.familyName,
-                email: credential.email
+//                email: credential.email
             )
 
             self.currentUserProfile = newProfile
             self.authState = .signedIn
             self.repository.saveSession(profile: newProfile)
 
-            logger.info("First login successful. Captured full name: \(newProfile.formattedFullName). Captured email: \(newProfile.email ?? "n/a").")
+            logger.info("First login successful. Captured full name: \(newProfile.formattedFullName).")
 
         } else {
             // Returning user — Apple only provides the userID.
             logger.info("Returning user login. UserID: \(userID)")
-
-            if let cachedProfile = repository.fetchProfile(for: userID) {
-                self.currentUserProfile = cachedProfile
-                self.repository.saveSession(profile: cachedProfile) // ensures keychain is updated if needed
-            } else {
-                let minimalProfile = AppleUserProfile(
-                    userID: userID,
-                    firstName: nil,
-                    lastName: nil,
-                    email: nil)
-                self.currentUserProfile = minimalProfile
-                self.repository.saveSession(profile: minimalProfile)
-                logger.warning("Missed Profile in cache")
-            }
             self.authState = .signedIn
         }
     }

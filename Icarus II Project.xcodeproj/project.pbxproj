@@ -26,9 +26,22 @@
 		AFC187312FC89A2C001CD7C9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Icarus-II-Project-Info.plist",
+			);
+			target = 1A62FE562FBB1AC0002D01F7 /* Icarus II Project */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A62FE592FBB1AC0002D01F7 /* Icarus II Project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */,
+			);
 			path = "Icarus II Project";
 			sourceTree = "<group>";
 		};
@@ -293,6 +306,7 @@
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Deal;
 				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -330,6 +344,7 @@
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Deal;
 				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
