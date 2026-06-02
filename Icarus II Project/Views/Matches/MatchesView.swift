@@ -20,16 +20,19 @@ struct MatchesView: View {
             let width = proxy.size.width
             let height = proxy.size.height
             let horizontal = width * 0.07
-            let icon = width * 0.10
+            let icon = width * 0.12
             
-            let iconSize = width * 0.16
+            let iconSize = width * 0.12
 
             ZStack {
+                
                 DottedBackground()
 
                 VStack(alignment: .leading, spacing: 0) {
+                    
+                    Spacer(minLength: height * 0.03)
                     HStack(alignment: .center, spacing: icon) {
-                        GoBackToFeed(size: iconSize) {
+                        BackToFeedButton(size: iconSize) {
                                 dismiss()
                         }
 
@@ -99,6 +102,7 @@ struct MatchesView: View {
 
                     Spacer(minLength: 0)
                 }
+                .ignoresSafeArea(edges: .top)
                 .blur(radius: expandedCard != nil ? 15 : 0) // Blur background when overlay is active
                 
                 // Full-screen overlay for expanded card details
@@ -327,9 +331,24 @@ private struct ExpandedMatchOverlay: View {
                     VStack(alignment: .center, spacing: cardW * 0.01) {
 
                         HStack(spacing: -cardW * 0.035) {
-                            Circle().fill(Color(hex: "FF6B6B")).frame(width: cardW * 0.085).overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Circle().fill(Color(hex: "4ECDC4")).frame(width: cardW * 0.085).overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Circle().fill(Color(hex: "FFE66D")).frame(width: cardW * 0.085).overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: cardW * 0.085, height: cardW * 0.085)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: cardW * 0.085, height: cardW * 0.085)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: cardW * 0.085, height: cardW * 0.085)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
                         }
                         .multilineTextAlignment(.center)
                     }
@@ -496,9 +515,24 @@ private struct MatchRowCardView: View {
                             .foregroundStyle(.black)
                         
                         HStack(spacing: -width * 0.035) {
-                            Circle().fill(Color(hex: "FF6B6B")).frame(width: width * 0.075).overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Circle().fill(Color(hex: "4ECDC4")).frame(width: width * 0.075).overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Circle().fill(Color(hex: "FFE66D")).frame(width: width * 0.075).overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: width * 0.075, height: width * 0.075)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: width * 0.075, height: width * 0.075)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                            Image("BIBI")
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: width * 0.075, height: width * 0.075)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
                         }
                     }
                 }
@@ -556,7 +590,7 @@ struct GoBackToFeed: View {
                         lineWidth: 1
                     )
 
-                Image(systemName: "iphone.app.switcher")
+                Image(systemName: "chevron.left")
                     .font(.system(size: size * 0.42))
                     .foregroundStyle(
                         LinearGradient(
@@ -567,12 +601,12 @@ struct GoBackToFeed: View {
                     )
                     .shadow(color: Color(hex: "5BBF61").opacity(0.4), radius: 8, x: 0, y: 0)
                     .overlay(
-                        Image(systemName: "iphone.app.switcher")
+                        Image(systemName: "chevron.left")
                             .font(.system(size: size * 0.42, weight: .medium))
                             .foregroundStyle(.white)
                     )
                     .overlay(
-                        Image(systemName: "iphone.app.switcher")
+                        Image(systemName: "chevron.left")
                             .font(.system(size: size * 0.42))
                             .foregroundStyle(.clear)
                             .overlay(
@@ -582,7 +616,7 @@ struct GoBackToFeed: View {
                                     endPoint: .bottom
                                 )
                                 .mask(
-                                    Image(systemName: "iphone.app.switcher")
+                                    Image(systemName: "rectangle.portrait.on.rectangle.portrait")
                                         .font(.system(size: size * 0.42))
                                 )
                             )
@@ -593,4 +627,43 @@ struct GoBackToFeed: View {
         .buttonStyle(PhysicalButtonStyle())
     }
 }
+
+struct BackToFeedButton: View {
+    let size: CGFloat
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .white.opacity(0.4), radius: size * 0.1, x: 0, y: size * 0.05)
+                    .shadow(color: .white,radius: size * 0.1)
+                
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.15), .clear, .black.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+
+                Image(systemName: "chevron.left")
+                    .font(.system(size: size * 0.42))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.black, .topbuttonsgradient],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .frame(width: size, height: size)
+        }
+        .buttonStyle(PhysicalButtonStyle())
+    }
+}
+
 

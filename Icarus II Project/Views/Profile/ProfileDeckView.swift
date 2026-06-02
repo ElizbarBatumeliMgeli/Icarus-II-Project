@@ -13,7 +13,7 @@ struct ProfileDeckView: View {
             let width = proxy.size.width
             let height = proxy.size.height
             let side = width * 0.095
-            let icon = width * 0.13
+            let icon = width * 0.12
             let avatar = width * 0.24
             let cardWidth = width * 0.72
             let cardHeight = height * 0.61
@@ -34,21 +34,11 @@ struct ProfileDeckView: View {
                 .animation(.easeInOut(duration: 0.3), value: isDeckEditing)
 
                 VStack(alignment: .leading, spacing: 0) {
+                    
+                    Spacer(minLength: height * 0.06)
+                    
                     HStack(alignment: .top) {
-                        Button {
-                            onClose()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: width * 0.075, weight: .semibold))
-                                .foregroundStyle(.black)
-                                .frame(width: icon, height: icon)
-                                .background(.white.opacity(0.96), in: Circle())
-                                .glassEffect(.regular, in: Circle())
-                        }
-                        .buttonStyle(.plain)
-
-                        Spacer()
-
+                        
                         if isDeckEditing {
                             Button("Done") {
                                 withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
@@ -62,6 +52,12 @@ struct ProfileDeckView: View {
                             .background(.white.opacity(0.96), in: Capsule())
                             .glassEffect(.regular, in: Capsule())
                             .buttonStyle(.plain)
+                        }
+                        
+                        Spacer()
+                        
+                        BackToFeedFromProfile(size: icon){
+                            onClose()
                         }
                     }
                     .padding(.top, height * 0.022)
@@ -333,6 +329,7 @@ struct ProfileDeckView: View {
 
                     Spacer(minLength: 0)
                 }
+                .ignoresSafeArea(edges: .top)
                 .padding(.horizontal, side)
             }
             .sheet(isPresented: $viewModel.isEditorPresented) {
@@ -433,4 +430,42 @@ struct ConfettiPiece: Identifiable {
     let rotation: Double
     let color: Color
     let delay: Double
+}
+
+struct BackToFeedFromProfile: View {
+    let size: CGFloat
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .white.opacity(0.4), radius: size * 0.1, x: 0, y: size * 0.05)
+                    .shadow(color: .white,radius: size * 0.1)
+                
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.15), .clear, .black.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: size * 0.42))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.black, .topbuttonsgradient],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .frame(width: size, height: size)
+        }
+        .buttonStyle(PhysicalButtonStyle())
+    }
 }

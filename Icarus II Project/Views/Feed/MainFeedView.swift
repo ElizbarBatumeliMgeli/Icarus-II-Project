@@ -43,18 +43,10 @@ struct MainFeedView: View {
                             .foregroundStyle(.black)
 
                         Spacer()
-
-                        Button {
+                        
+                        MatchesIcon(size: iconSizeNavigation) {
                             openMatches()
-                        } label: {
-                            Image(systemName: "point.3.connected.trianglepath.dotted")
-                                .font(.system(size: (width * 0.122) * 0.38, weight: .regular))
-                                .foregroundStyle(.black)
-                                .frame(width: width * 0.122, height: width * 0.122)
-                                .background(.white.opacity(0.96), in: Circle())
-                                .glassEffect(.regular, in: Circle())
                         }
-                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, horizontal)
 
@@ -352,6 +344,44 @@ struct ProfileIcon: View {
                     )
 
                 Image(systemName: "person.fill")
+                    .font(.system(size: size * 0.42))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.black, .topbuttonsgradient],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .frame(width: size, height: size)
+        }
+        .buttonStyle(PhysicalButtonStyle())
+    }
+}
+
+struct MatchesIcon: View {
+    let size: CGFloat
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .white.opacity(0.4), radius: size * 0.1, x: 0, y: size * 0.05)
+                    .shadow(color: .white,radius: size * 0.1)
+                
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.15), .clear, .black.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+
+                Image(systemName: "rectangle.on.rectangle")
                     .font(.system(size: size * 0.42))
                     .foregroundStyle(
                         LinearGradient(
