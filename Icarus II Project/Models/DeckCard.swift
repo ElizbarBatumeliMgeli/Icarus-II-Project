@@ -14,23 +14,21 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
     // How it should act: ViewModel will populate this from cloud data and keep it up to date.
     //
     // OLA  (Firestore):
-    // Added `ownerID`, `tags`, `colorHex`, `createdAt`, `updatedAt` for firestorepersistence
-    // `category` is now a computed view of `tags.first`, and `color` is computed
+    // Added `ownerID`, `colorHex`, `createdAt`, `updatedAt` for Firestore persistence.
+    // `category` is a stored field (the card's pill text); `color` is computed
     // from `colorHex` — Views keep reading the same property names.
 
     let id: UUID                       // Stable identifier; also used as the Firestore doc id (as uuidString).
     var ownerID: String = ""           // Firebase Auth UID of the deck owner. TODO(auth)
     var title: String                  // Big headline shown on the card. Can include "\n" to split into two lines.
     var ownerName: String = "Marco\nRocco"  // Display name shown on the card; not used for auth.
-    var tags: [String] = []            // Tag list; UI uses the first one as the "category" pill.
+    var category: String = ""          // Tag/pill text shown on the card (e.g. Food, Social, Art). Editable from the UI.
     var dateText: String = ""          // "When?" pill content (e.g. "Today", "Tomorrow", "27/05/2026") - to discuss with the team
     var location: String               // "Where?" pill
     var colorHex: String = "D8D8D8"    // Accent color persisted as a hex string (no "#"). UI reads `color`.
     var createdAt: Date? = nil
     var updatedAt: Date? = nil
 
-    
-    var category: String { tags.first ?? "" }
     // SwiftUI accent color built from the stored hex string.
     var color: Color { Color(hex: colorHex) }
 
@@ -42,7 +40,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
         ownerID: String = "",
         title: String,
         ownerName: String = "Marco\nRocco",
-        tags: [String] = [],
+        category: String = "",
         dateText: String = "",
         location: String,
         colorHex: String = "D8D8D8",
@@ -53,7 +51,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
         self.ownerID = ownerID
         self.title = title
         self.ownerName = ownerName
-        self.tags = tags
+        self.category = category
         self.dateText = dateText
         self.location = location
         self.colorHex = colorHex
@@ -76,7 +74,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
             ownerID: "",
             title: title,
             ownerName: ownerName,
-            tags: category.isEmpty ? [] : [category],
+            category: category,
             dateText: dateText,
             location: location,
             colorHex: DeckCard.hexString(from: color),
@@ -102,7 +100,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
 }
 extension DeckCard {
     private enum CodingKeys: String, CodingKey {
-        case id, ownerID, title, ownerName, tags, dateText, location, colorHex, createdAt, updatedAt
+        case id, ownerID, title, ownerName, category, dateText, location, colorHex, createdAt, updatedAt
     }
 
     // Tolerant decoder: missing fields fall back to sensible defaults so older or partial documents don't fail to load.
@@ -122,7 +120,7 @@ extension DeckCard {
         self.ownerID = try c.decodeIfPresent(String.self, forKey: .ownerID) ?? ""
         self.title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
         self.ownerName = try c.decodeIfPresent(String.self, forKey: .ownerName) ?? "Marco\nRocco"
-        self.tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        self.category = try c.decodeIfPresent(String.self, forKey: .category) ?? ""
         self.dateText = try c.decodeIfPresent(String.self, forKey: .dateText) ?? ""
         self.location = try c.decodeIfPresent(String.self, forKey: .location) ?? ""
         self.colorHex = try c.decodeIfPresent(String.self, forKey: .colorHex) ?? "D8D8D8"
