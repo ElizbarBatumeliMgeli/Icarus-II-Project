@@ -62,7 +62,8 @@ playground.xcworkspace
 # Editor backups
 *~
 *.swp
-GoogleService-Info.plist
+# NOTE: GoogleService-Info.plist IS committed (shared test Firebase project,
+# bundle Alpha123.test1123) so the app builds for the whole team out of the box.
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However

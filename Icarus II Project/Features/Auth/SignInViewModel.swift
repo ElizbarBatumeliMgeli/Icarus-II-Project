@@ -139,8 +139,7 @@ final class AppleAuthManager {
             let newProfile = AppleUserProfile(
                 userID: userID,
                 firstName: nameComponents.givenName,
-                lastName: nameComponents.familyName,
-//                email: credential.email
+                lastName: nameComponents.familyName
             )
 
             self.currentUserProfile = newProfile

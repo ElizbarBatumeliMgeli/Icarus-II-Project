@@ -59,7 +59,10 @@ final class DeckViewModel {
 
     // UI editor state (used by the sheet).
     var selectedCard: DeckCard?
-    var isEditorPresented = false
+    var isEditorPresented = false // Controls the editor sheet presentation.
+
+    // Inline-draft state for the new card editor flow (from main's UI).
+    var draftCard: DeckCard?
 
     // MARK: - My deck
 
@@ -116,10 +119,32 @@ final class DeckViewModel {
 
     // MARK: - Editor entry points
 
-    // EL - Opens the editor to create a new card.
+    // EL - Creates an inline draft card (main's inline-draft flow) instead of opening the sheet.
     func addCard() {
-        selectedCard = nil
-        isEditorPresented = true
+        draftCard = DeckCard(
+            title: "",
+            ownerName: user.name,
+            category: "Food", // Default fallback
+            dateText: "Today", // Default fallback
+            location: "",
+            color: Color(hex: "D8D8D8")
+        )
+    }
+
+    /// Saves the inline draft card to the main list and stops drafting
+    func saveDraft() {
+        guard let draft = draftCard else { return }
+        
+        // 1. Insert or update the card in the main list
+        save(card: draft)
+        
+        // 2. Setting this to nil stops the drafting UI from rendering
+        draftCard = nil
+    }
+
+    /// Cancels the inline editing session and stops drafting
+    func cancelDraft() {
+        draftCard = nil
     }
 
     // EL - Opens the editor to edit an existing card (falls back to the first card).
@@ -200,6 +225,8 @@ final class DeckViewModel {
         if let index = cards.firstIndex(of: card) {
             cards.remove(at: index)
         }
+        
+        
     }
 
     // MARK: - Matched cards (for MatchesView)

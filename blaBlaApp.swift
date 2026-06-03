@@ -4,8 +4,8 @@
 //
 //  Created by Elizbar Kheladze on 21/05/26.
 //
-//  NOTE: Commented out to avoid duplicate @main.
-//  The active entry point is Icarus_II_ProjectApp.swift.
+//  App entry point (@main). Launches AppSessionView, which routes to the
+//  sign-in screen or the main app depending on auth state.
 //
 
 import SwiftUI

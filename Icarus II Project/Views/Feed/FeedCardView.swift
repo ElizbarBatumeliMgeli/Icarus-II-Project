@@ -11,7 +11,7 @@ struct FeedCardView: View {
     let card: DeckCard
     let width: CGFloat
     let height: CGFloat
-    let onSwipe: () -> Void
+    let onSwipe: (Bool) -> Void
 
     @State private var offset: CGSize = .zero
     @State private var rotation: Double = 0
@@ -181,7 +181,7 @@ struct FeedCardView: View {
                             rotation = 0
                             isDragging = false
                             startIdle()
-                            onSwipe()
+                            onSwipe(value.translation.width > 0)
                         }
                     } else {
                         withAnimation(.spring(response: 0.32, dampingFraction: 0.75)) {

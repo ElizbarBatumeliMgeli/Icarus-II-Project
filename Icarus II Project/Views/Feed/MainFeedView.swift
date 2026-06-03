@@ -5,12 +5,16 @@
 //  Created by Elizbar Kheladze on 25/05/26.
 //
 
+
 import SwiftUI
 
 struct MainFeedView: View {
     @Bindable var viewModel: DeckViewModel
     let openProfile: () -> Void
     let openMatches: () -> Void
+    
+    // Controls the pop-up stamp animation
+    @State private var showDealStamp = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -24,8 +28,6 @@ struct MainFeedView: View {
             let cardHeight = min(width * 1.36, height * 0.6)
 
             ZStack {
-                // OLA: On first app load, fetch cards from your cloud and populate viewModel.cards.
-                // You can call viewModel.fetchCards() from AppRootView .task, or here on appear.
                 DottedBackground()
 
                 VStack(spacing: 0) {
@@ -41,18 +43,10 @@ struct MainFeedView: View {
                             .foregroundStyle(.black)
 
                         Spacer()
-
-                        Button {
+                        
+                        MatchesIcon(size: iconSizeNavigation) {
                             openMatches()
-                        } label: {
-                            Image(systemName: "point.3.connected.trianglepath.dotted")
-                                .font(.system(size: (width * 0.122) * 0.38, weight: .regular))
-                                .foregroundStyle(.black)
-                                .frame(width: width * 0.122, height: width * 0.122)
-                                .background(.white.opacity(0.96), in: Circle())
-                                .glassEffect(.regular, in: Circle())
                         }
-                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, horizontal)
 
@@ -89,7 +83,14 @@ struct MainFeedView: View {
                                     card: first,
                                     width: cardWidth,
                                     height: cardHeight,
-                                    onSwipe: { viewModel.match(first) } // OLA: persist swipe/decision if needed (e.g., dismissed/liked)
+                                    onSwipe: { isRightSwipe in
+                                        if isRightSwipe {
+                                            triggerDeal()
+                                            viewModel.match(first)   // right = like/match (persists)
+                                        } else {
+                                            viewModel.dismiss(first)  // left = dismiss (local only)
+                                        }
+                                    }
                                 )
                                 .zIndex(10)
                             }
@@ -98,35 +99,44 @@ struct MainFeedView: View {
 
                         Spacer(minLength: height * 0.015)
 
-//                        PhysicalShuffle(size: iconSize) {
-//                            viewModel.shuffle()
-//                        }
-
                         Spacer(minLength: height * 0.018)
 
                         HStack {
                             PhysicalXButton(size: iconSize) {
                                 if let card = viewModel.feedCards.first {
-                                    viewModel.dismiss(card) // OLA: treat as a dismiss; optionally persist to backend.
+                                    viewModel.dismiss(card) // left = dismiss (local only)
                                 }
                             }
                             Spacer()
 
                             PhysicalShuffle(size: iconSize * 0.9) {
-                                viewModel.shuffle() // OLA: purely local shuffle; no backend work needed.
+                                viewModel.shuffle()
                             }
                             
                             Spacer()
 
                             PhysicalHeartButton(size: iconSize) {
                                 if let card = viewModel.feedCards.first {
-                                    viewModel.match(card) // OLA: treat as an approve/like; optionally persist to backend.
+                                    triggerDeal()
+                                    viewModel.match(card) // right = like/match (persists)
                                 }
                             }
                         }
                         .padding(.horizontal, horizontal)
                         .padding(.bottom, height * 0.02)
                     }
+                }
+                
+                // Overlay rendering
+                if showDealStamp {
+                    DealStampOverlay()
+                        .zIndex(100)
+                        .transition(
+                            .asymmetric(
+                                insertion: .scale(scale: 2.5).combined(with: .opacity),
+                                removal: .scale(scale: 0.8).combined(with: .opacity)
+                            )
+                        )
                 }
             }
         }
@@ -142,6 +152,63 @@ struct MainFeedView: View {
         }
         .onChange(of: viewModel.currentOwnerID) { _ in
             Task { await viewModel.reloadFeed() }
+        }
+    }
+    
+    // Animates the stamp appearing and disappearing
+    private func triggerDeal() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+            showDealStamp = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+            withAnimation(.easeOut(duration: 0.25)) {
+                showDealStamp = false
+            }
+        }
+    }
+}
+
+// MARK: - Deal Stamp Overlay Component
+struct DealStampOverlay: View {
+    var body: some View {
+        ZStack {
+            // Darkens the background slightly behind the stamp
+            Color.black.opacity(0.15)
+                .ignoresSafeArea()
+            
+            ZStack {
+                // Main dark pill
+                Capsule()
+                    .fill(Color(hex: "080808"))
+                    .shadow(color: Color(hex: "5BBF61").opacity(0.5), radius: 35, x: 0, y: 15)
+                    .shadow(color: .white.opacity(0.2), radius: 2)
+                
+                // Border gradient (matching physical buttons)
+                Capsule()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.35), .clear, .black.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+                
+                // Neon Text
+                Text("DEAL!")
+                    .font(.custom("Nohemi-Medium", fixedSize: 55))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "C9EC5C"), Color(hex: "5BBF61")],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: Color(hex: "5BBF61").opacity(0.6), radius: 12)
+            }
+            .frame(width: 280, height: 110)
+            .rotationEffect(.degrees(-12)) // Tilted for that stamped look
         }
     }
 }
@@ -299,27 +366,44 @@ struct ProfileIcon: View {
                             endPoint: .bottom
                         )
                     )
-//                    .overlay(
-//                        Image(systemName: "person")
-//                            .font(.system(size: size * 0.42, weight: .medium))
-//                            .foregroundStyle(.black)
-//                    )
-//                    .overlay(
-//                        Image(systemName: "person.fill")
-//                            .font(.system(size: size * 0.42))
-//                            .foregroundStyle(.clear)
-//                            .overlay(
-//                                LinearGradient(
-//                                    colors: [.black.opacity(0.8), .clear],
-//                                    startPoint: .top,
-//                                    endPoint: .bottom
-//                                )
-//                                .mask(
-//                                    Image(systemName: "person.fill")
-//                                        .font(.system(size: size * 0.42))
-//                                )
-//                            )
-//                    )
+            }
+            .frame(width: size, height: size)
+        }
+        .buttonStyle(PhysicalButtonStyle())
+    }
+}
+
+struct MatchesIcon: View {
+    let size: CGFloat
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .white.opacity(0.4), radius: size * 0.1, x: 0, y: size * 0.05)
+                    .shadow(color: .white,radius: size * 0.1)
+                
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.15), .clear, .black.opacity(0.9)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.system(size: size * 0.42))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.black, .topbuttonsgradient],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
             }
             .frame(width: size, height: size)
         }
@@ -386,4 +470,3 @@ struct PhysicalShuffle: View {
         .buttonStyle(PhysicalButtonStyle())
     }
 }
-
