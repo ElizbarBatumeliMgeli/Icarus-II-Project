@@ -52,7 +52,7 @@ struct MainFeedView: View {
 
                     Spacer(minLength: height * 0.055)
 
-                    if viewModel.cards.isEmpty {
+                    if viewModel.feedCards.isEmpty {
                         EmptyFeedView(width: width, height: cardHeight)
                         Spacer()
                     } else {
@@ -69,7 +69,7 @@ struct MainFeedView: View {
                                 .rotationEffect(.degrees(4.4))
                                 .offset(x: width * 0.025, y: -height * 0.004)
 
-                            if let second = viewModel.cards.dropFirst().first {
+                            if let second = viewModel.feedCards.dropFirst().first {
                                 FeedCardBackView(
                                     card: second,
                                     width: cardWidth,
@@ -78,7 +78,7 @@ struct MainFeedView: View {
                                 .zIndex(0)
                             }
 
-                            if let first = viewModel.cards.first {
+                            if let first = viewModel.feedCards.first {
                                 FeedCardView(
                                     card: first,
                                     width: cardWidth,
@@ -86,8 +86,10 @@ struct MainFeedView: View {
                                     onSwipe: { isRightSwipe in
                                         if isRightSwipe {
                                             triggerDeal()
+                                            viewModel.match(first)   // right = like/match (persists)
+                                        } else {
+                                            viewModel.dismiss(first)  // left = dismiss (local only)
                                         }
-                                        viewModel.swipe(first)
                                     }
                                 )
                                 .zIndex(10)
@@ -101,8 +103,8 @@ struct MainFeedView: View {
 
                         HStack {
                             PhysicalXButton(size: iconSize) {
-                                if let card = viewModel.cards.first {
-                                    viewModel.swipe(card)
+                                if let card = viewModel.feedCards.first {
+                                    viewModel.dismiss(card) // left = dismiss (local only)
                                 }
                             }
                             Spacer()
@@ -114,9 +116,9 @@ struct MainFeedView: View {
                             Spacer()
 
                             PhysicalHeartButton(size: iconSize) {
-                                if let card = viewModel.cards.first {
+                                if let card = viewModel.feedCards.first {
                                     triggerDeal()
-                                    viewModel.swipe(card)
+                                    viewModel.match(card) // right = like/match (persists)
                                 }
                             }
                         }
@@ -139,6 +141,18 @@ struct MainFeedView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .task {
+            await viewModel.reloadFeed()
+        }
+        .refreshable {
+            await viewModel.reloadFeed()
+        }
+        .onChange(of: viewModel.user.connections) { _ in
+            Task { await viewModel.reloadFeed() }
+        }
+        .onChange(of: viewModel.currentOwnerID) { _ in
+            Task { await viewModel.reloadFeed() }
+        }
     }
     
     // Animates the stamp appearing and disappearing

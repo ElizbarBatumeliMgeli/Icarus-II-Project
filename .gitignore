@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Xcode — per-user state (must stay out)
+xcuserdata/
+*.xcuserstate
+*.moved-aside
+
+# Xcode build outputs
+build/
+DerivedData/
+
+# Swift Package Manager local cache (the workspace-level Package.resolved IS committed)
+.swiftpm/
+.build/
+
+# Editor backups
+*~
+*.swp
+GoogleService-Info.plist
