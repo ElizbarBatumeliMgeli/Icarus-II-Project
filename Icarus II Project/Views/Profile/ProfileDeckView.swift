@@ -1,3 +1,7 @@
+//
+//  ProfileDeckView.swift
+//
+
 import SwiftUI
 
 struct ProfileDeckView: View {
@@ -78,30 +82,32 @@ struct ProfileDeckView: View {
                                     .clipShape(Circle())
                             }
 
-                            Text(viewModel.user.name)
-                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
-
-                            HStack(spacing: width * 0.04) {
-                                Button {
-                                    openConnections()
-                                } label: {
-                                    Text("Connections")
-                                        .font(.system(size: width * 0.045, weight: .semibold))
-                                        .foregroundStyle(.black)
-                                        .padding(.horizontal, width * 0.06)
-                                        .frame(height: height * 0.052)
-                                        .background(
-                                            Capsule(style: .continuous)
-                                                .fill(Color(hex: "D3D3D3"))
-                                        )
-                                }
-                                .buttonStyle(.plain)
-
-                                CircleIconButton(systemName: "square.and.arrow.up", size: icon)
+                            // Profile Name and Share Button (Moved to the right)
+                            HStack(spacing: width * 0.03) {
+                                Text(viewModel.user.name)
+                                    .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.75)
+                                
+                                CircleIconButton(systemName: "square.and.arrow.up", size: width * 0.085)
                             }
+
+                            // Connections Button
+                            Button {
+                                openConnections()
+                            } label: {
+                                Text("Connections")
+                                    .font(.system(size: width * 0.045, weight: .semibold))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, width * 0.06)
+                                    .frame(height: height * 0.052)
+                                    .background(
+                                        Capsule(style: .continuous)
+                                            .fill(Color(hex: "D3D3D3"))
+                                    )
+                            }
+                            .buttonStyle(.plain)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, height * 0.01)
@@ -109,6 +115,7 @@ struct ProfileDeckView: View {
                     }
 
                     if !isDeckEditing {
+                        // White Vector Line
                         Rectangle()
                             .fill(Color.white.opacity(1))
                             .frame(height: 1)
@@ -117,28 +124,27 @@ struct ProfileDeckView: View {
                     }
 
                     if !isDeckEditing {
+                        // Deck Header (Pencil moved back to the right)
                         HStack(alignment: .center) {
                             Text("Your deck")
-                                .font(.system(size: width * 0.074, weight: .semibold))
-                                .foregroundStyle(.black)
+                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.074))
+                                .foregroundStyle(.white)
 
                             Spacer()
 
-                            HStack(spacing: width * 0.04) {
-                                Button {
-                                    withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
-                                        isDeckEditing = true
-                                    }
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .font(.system(size: width * 0.058, weight: .regular))
-                                        .foregroundStyle(Color(hex: "151515"))
-                                        .frame(width: icon, height: icon)
-                                        .background(.white.opacity(0.94), in: Circle())
-                                        .glassEffect(.regular, in: Circle())
+                            Button {
+                                withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                                    isDeckEditing = true
                                 }
-                                .buttonStyle(.plain)
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: width * 0.045, weight: .bold))
+                                    .foregroundStyle(Color(hex: "151515"))
+                                    .frame(width: width * 0.074, height: width * 0.074)
+                                    .background(.white.opacity(0.94), in: Circle())
+                                    .glassEffect(.regular, in: Circle())
                             }
+                            .buttonStyle(.plain)
                         }
                         .padding(.top, height * 0.012)
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -146,7 +152,6 @@ struct ProfileDeckView: View {
 
                     ZStack(alignment: .bottom) {
                         Group {
-                            // FIXED EMPTY STATE: Bounded frame, forced solid colors, and scaling rules
                             if viewModel.cards.isEmpty && viewModel.draftCard == nil {
                                 VStack(spacing: height * 0.03) {
                                     Spacer(minLength: 0)
@@ -160,9 +165,8 @@ struct ProfileDeckView: View {
                                         .foregroundStyle(.white)
                                         .multilineTextAlignment(.center)
                                         .lineLimit(2)
-                                        .minimumScaleFactor(0.5) // Prevents the text from vanishing if it clips
+                                        .minimumScaleFactor(0.5)
                                     
-                                    // Your physical plus button
                                     Button {
                                         withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
                                             isDeckEditing = true
@@ -220,44 +224,41 @@ struct ProfileDeckView: View {
                                     Spacer(minLength: 0)
                                 }
                                 .frame(maxWidth: .infinity)
-                                .frame(height: cardHeight + cardHeight * 0.1) // Restored strict height boundaries
+                                .frame(height: cardHeight + cardHeight * 0.1)
                                 .transition(.opacity)
                                 
                             } else {
                                 // POPULATED STATE
-                                                                if isDeckEditing {
-                                                                    VStack {
-                                                                        Spacer(minLength: 0)
-                                                                        DeckCarousel(
-                                                                            viewModel: viewModel,
-                                                                            cardWidth: cardWidth,
-                                                                            cardHeight: cardHeight,
-                                                                            sideInset: 0,
-                                                                            onEdit: { viewModel.editCard($0) },
-                                                                            onDelete: { viewModel.delete($0) }
-                                                                            // The forced exit closure has been completely removed!
-                                                                        )
-                                                                        .padding(.horizontal, -side)
-                                                                        .padding(.top, height * 0.07)
-                                                                        Spacer(minLength: 0)
-                                                                    }
-                                                                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                                                                } else {
-                                                                    DeckCarousel(
-                                                                        viewModel: viewModel,
-                                                                        cardWidth: cardWidth,
-                                                                        cardHeight: cardHeight,
-                                                                        sideInset: side,
-                                                                        onEdit: { viewModel.editCard($0) },
-                                                                        onDelete: { card in
-                                                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                                                                viewModel.delete(card)
-                                                                            }
-                                                                        }
-                                                                    )
-                                                                    .ignoresSafeArea(edges: .horizontal)
-                                                                    .padding(.horizontal, -side)
-                                                                }
+                                if isDeckEditing {
+                                    VStack {
+                                        Spacer(minLength: 0)
+                                        DeckCarousel(
+                                            viewModel: viewModel,
+                                            cardWidth: cardWidth,
+                                            cardHeight: cardHeight,
+                                            sideInset: 0,
+                                            onEdit: { viewModel.editCard($0) },
+                                            onDelete: { viewModel.delete($0) }
+                                        )
+                                        .padding(.top, height * 0.07)
+                                        Spacer(minLength: 0)
+                                    }
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                                } else {
+                                    DeckCarousel(
+                                        viewModel: viewModel,
+                                        cardWidth: cardWidth,
+                                        cardHeight: cardHeight,
+                                        sideInset: side,
+                                        onEdit: { viewModel.editCard($0) },
+                                        onDelete: { card in
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                                viewModel.delete(card)
+                                            }
+                                        }
+                                    )
+                                    .ignoresSafeArea(edges: .horizontal)
+                                }
                             }
                         }
 
@@ -329,9 +330,10 @@ struct ProfileDeckView: View {
 
                     Spacer(minLength: 0)
                 }
-                .ignoresSafeArea(edges: .top)
+                .ignoresSafeArea(edges: [.top, .bottom]) // FIX: Allow bleeding into the top and bottom safe areas!
                 .padding(.horizontal, side)
             }
+            // THE FIX: Removed the restrictive `.clipped()` here entirely!
             .sheet(isPresented: $viewModel.isEditorPresented) {
                 CardEditorSheet(
                     card: viewModel.selectedCard,
