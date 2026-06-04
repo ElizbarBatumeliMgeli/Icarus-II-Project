@@ -8,6 +8,8 @@ struct AppRootView: View {
 
     // Controls the custom left-to-right profile transition
     @State private var showProfile = false
+    
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -43,6 +45,14 @@ struct AppRootView: View {
                     .zIndex(1) // Ensures it slides over the feed
                 }
             }
+            .fullScreenCover(isPresented: .init(
+                        get: { !hasCompletedOnboarding },
+                        set: { _ in }
+                    )) {
+                        OnboardingView()
+                            .environment(viewModel)
+                            .environment(userViewModel)
+                    }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: AppRoute.self) { route in
                 switch route {
