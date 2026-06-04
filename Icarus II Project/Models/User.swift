@@ -34,8 +34,31 @@ struct User: Identifiable, Codable, Hashable, Sendable {
     // Alias the profile UI reads.
     var name: String { displayName }
 
-    // SwiftUI avatar color built from the stored hex string.
-    var avatarColor: Color { Color(hex: avatarColorHex) }
+    // First letter of the name, for the default avatar (e.g. "A"). Falls back to "?".
+    var initial: String {
+        let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "?" : trimmed.prefix(1).uppercased()
+    }
+
+    // Avatar background color. If the user hasn't set a custom color (still the default),
+    // derive a stable, distinct color from their id so each user looks unique.
+    var avatarColor: Color {
+        let isDefault = avatarColorHex.isEmpty || avatarColorHex.uppercased() == "D3D3D3"
+        return Color(hex: isDefault ? User.derivedAvatarHex(forSeed: id) : avatarColorHex)
+    }
+
+    // A small, friendly palette; the seed (user id) picks one deterministically.
+    private static let avatarPalette = [
+        "E8896C", "6CA0E8", "6CC9A0", "E8C46C",
+        "B57CE8", "E87CA8", "7CD3E8", "9BBF5F"
+    ]
+
+    // Deterministic hash → palette index, so the same id always maps to the same color.
+    static func derivedAvatarHex(forSeed seed: String) -> String {
+        guard !seed.isEmpty else { return avatarPalette[0] }
+        let hash = seed.unicodeScalars.reduce(5381) { ($0 &* 33) &+ Int($1.value) }
+        return avatarPalette[abs(hash) % avatarPalette.count]
+    }
 
     // Deep link that should open the app and connect the opener to this user.
     // NOTE: actually opening this requires registering the `icarus` URL scheme

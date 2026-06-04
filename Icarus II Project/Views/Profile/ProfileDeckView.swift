@@ -68,19 +68,18 @@ struct ProfileDeckView: View {
                         VStack(spacing: height * 0.018) {
                             ZStack {
                                 Circle()
-                                    .fill(viewModel.user.avatarColor)
+                                    .fill(userViewModel.user?.avatarColor ?? Color(hex: "D3D3D3"))
                                     .frame(width: avatar * 1.45, height: avatar * 1.45)
                                     .shadow(color: .black.opacity(0.08), radius: width * 0.04, x: 0, y: width * 0.02)
                                     .glassEffect(.regular, in: Circle())
 
-                                Image("BIBI")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: avatar * 1.32, height: avatar * 1.32)
-                                    .clipShape(Circle())
+                                // Default avatar: first letter of the signed-in user's name.
+                                Text(userViewModel.user?.initial ?? "")
+                                    .font(.custom("Nohemi-Medium", fixedSize: avatar * 0.62))
+                                    .foregroundStyle(.white)
                             }
 
-                            Text(viewModel.user.name)
+                            Text(userViewModel.user?.displayName ?? "")
                                 .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
