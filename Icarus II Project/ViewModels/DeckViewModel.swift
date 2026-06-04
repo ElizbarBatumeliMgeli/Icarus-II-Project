@@ -115,7 +115,14 @@ final class DeckViewModel {
             // Strictly connection-scoped: only cards owned by people I'm connected to.
             // No connections → empty feed (EmptyFeedView). My own cards are excluded
             // automatically, since my own id is never in my connections list.
-            feedCards = try await repository.feed(fromOwnerIDs: user.connections)
+            let connectionCards = try await repository.feed(fromOwnerIDs: user.connections)
+
+            // Hide cards I've already acted on — matched (.accepted) OR dismissed (.blocked) —
+            // so they never resurrect on a refresh.
+            let actedOn = try await matchRepository.forMatcher(currentOwnerID)
+            let actedCardIDs = Set(actedOn.map { $0.cardID })
+
+            feedCards = connectionCards.filter { !actedCardIDs.contains($0.id.uuidString) }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -219,9 +226,27 @@ final class DeckViewModel {
         }
     }
 
-    // EL - LEFT / dismiss swipe. Just removes the card from `feedCards` locally — no match, nothing saved.
+    // EL - LEFT / dismiss swipe. Removes the card from `feedCards` and records a
+    // "dismissed" marker (status .blocked) so it stays out of the feed across refreshes.
     func dismiss(_ card: DeckCard) {
         feedCards.removeAll { $0.id == card.id }
+
+        let dismissal = Match(
+            id: Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID),
+            cardID: card.id.uuidString,
+            ownerID: card.ownerID,
+            matcherID: currentOwnerID,
+            status: .blocked,
+            createdAt: Date()
+        )
+
+        Task {
+            do {
+                try await matchRepository.create(dismissal)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
     // EL - Old local-only swipe, kept so existing feed code still compiles; for the real flow use match(_:) on a right swipe and dismiss(_:) on a left swipe instead of this.
@@ -246,8 +271,10 @@ final class DeckViewModel {
         defer { isLoading = false }
 
         do {
+            // Only real matches (.accepted) — dismissed cards (.blocked) live here too
+            // for feed-exclusion, but must not show up in Matches.
             let myMatches = try await matchRepository.forMatcher(currentOwnerID)
-            let cardIDs = myMatches.map { $0.cardID }
+            let cardIDs = myMatches.filter { $0.status == .accepted }.map { $0.cardID }
             matchedCards = try await repository.cards(withIDs: cardIDs)
         } catch {
             errorMessage = error.localizedDescription

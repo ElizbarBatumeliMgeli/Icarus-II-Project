@@ -150,10 +150,8 @@ struct MainFeedView: View {
         .task {
             await viewModel.reloadFeed()
         }
-        // Pull-to-refresh: drag the feed down to re-fetch.
-        .refreshable {
-            await viewModel.reloadFeed()
-        }
+        // (Pull-to-refresh removed: .refreshable needs a scrollable container, and the
+        //  feed is a fixed card stack, so the gesture never fired. Foreground refresh below.)
         // Auto-refresh when returning to the app, so connections' new cards show up
         // without needing to quit and relaunch.
         .onChange(of: scenePhase) { _, phase in
