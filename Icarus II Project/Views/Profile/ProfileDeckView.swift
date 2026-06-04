@@ -101,8 +101,23 @@ struct ProfileDeckView: View {
                                         )
                                 }
                                 .buttonStyle(.plain)
-                                // TODO(EL): This button should be changed to use ShareLink, calling userViewModel.user?.connectionLink and unwrap it.
-                                CircleIconButton(systemName: "square.and.arrow.up", size: icon)
+
+                                // Share a permanent, individual invite link (icarus://connect?code=…).
+                                // The link embeds the user's permanent connectionCode, so it never expires.
+                                if let link = userViewModel.user?.connectionLink,
+                                   let code = userViewModel.user?.connectionCode, !code.isEmpty {
+                                    ShareLink(
+                                        item: link,
+                                        subject: Text("Connect with me on DEAL!"),
+                                        message: Text("Tap to connect with me on DEAL — or enter my code: \(code)")
+                                    ) {
+                                        CircleIconLabel(systemName: "square.and.arrow.up", size: icon)
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    // Until the signed-in profile loads, show the icon inert.
+                                    CircleIconButton(systemName: "square.and.arrow.up", size: icon)
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity)
