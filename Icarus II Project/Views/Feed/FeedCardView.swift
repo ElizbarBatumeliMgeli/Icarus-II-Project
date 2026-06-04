@@ -22,6 +22,7 @@ struct FeedCardView: View {
 
     var body: some View {
         let cardRadius = width * 0.08
+        let borderColor = card.color == Color(hex: "111111") ? Color(hex: "3478F6") : card.color
 
         ZStack {
             // Glowing shadow behind the card, matching card.color
@@ -117,14 +118,26 @@ struct FeedCardView: View {
             }
 
             VStack(spacing: 0) {
-                Text("10% of your friends already voted")
-                    .font(.system(size: width * 0.035, weight: .semibold))
-                    .foregroundStyle(.black.opacity(0.18))
-                    .underline()
-                    .padding(.top, height * 0.055)
+                // Top: author (left) + category pill (right)
+                HStack(alignment: .center, spacing: width * 0.02) {
+                    HStack(spacing: width * 0.02) {
+                        Circle()
+                            .fill(Color(hex: "BBE4C6"))
+                            .frame(width: width * 0.06, height: width * 0.06)
+                            .overlay(Circle().stroke(Color.black.opacity(0.1), lineWidth: 1))
+                        Text(card.ownerName.replacingOccurrences(of: "\n", with: " "))
+                            .font(.system(size: width * 0.038, weight: .medium))
+                            .foregroundStyle(.black.opacity(0.75))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    categoryPill(card.category, color: borderColor)
+                }
+                .padding(.top, height * 0.055)
 
                 Spacer()
 
+                // Centre: title + date/location pills
                 VStack(spacing: height * 0.025) {
                     Text(card.title)
                         .font(.custom("Nohemi-Medium", fixedSize: 40))
@@ -133,18 +146,17 @@ struct FeedCardView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.72)
 
-                    HStack(spacing: width * 0.035) {
-                        pill(card.dateText)
-                        pill(card.location)
+                    HStack(spacing: width * 0.01) {
+                        infoPill(text: card.dateText, icon: "calendar")
+                        infoPill(text: card.location, icon: "paperplane")
                     }
                 }
                 .padding(.bottom, height * 0.06)
 
                 Spacer()
 
-                Text("By \(card.ownerName)")
-                    .font(.system(size: width * 0.033, weight: .semibold))
-                    .foregroundStyle(.black.opacity(0.18))
+                // Bottom: participants
+                participantsGroup()
                     .padding(.bottom, height * 0.055)
             }
             .padding(.horizontal, width * 0.09)
@@ -196,24 +208,46 @@ struct FeedCardView: View {
         .onAppear { startIdle() }
     }
 
-    private func pill(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: width * 0.043, weight: .semibold))
-            .foregroundStyle(.black.opacity(0.62))
-            .lineLimit(1)
-            .minimumScaleFactor(0.75)
-            .frame(width: width * 0.27, height: height * 0.057)
+    private func categoryPill(_ text: String, color: Color) -> some View {
+        Text(text.isEmpty ? "Category" : text)
+            .font(.system(size: width * 0.035, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, width * 0.04)
+            .frame(height: height * 0.055)
             .background(
                 Capsule(style: .continuous)
-                    .fill(Color.white.opacity(0.58))
-                    .shadow(color: .black.opacity(0.22), radius: width * 0.012, x: 0, y: width * 0.006)
-            )
-            .overlay(
-                Capsule(style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    .fill(color)
             )
     }
 
+    private func infoPill(text: String, icon: String) -> some View {
+        HStack(spacing: width * 0.01) {
+            Image(systemName: icon)
+                .font(.system(size: width * 0.05, weight: .semibold))
+            Text(text.isEmpty ? "—" : text)
+                .font(.system(size: width * 0.05, weight: .semibold))
+        }
+        .foregroundStyle(.black)
+        .padding(.horizontal, width * 0.01)
+        .frame(height: height * 0.057)
+    }
+
+    private func participantsGroup() -> some View {
+        VStack(alignment: .center, spacing: width * 0.02) {
+            HStack(spacing: -width * 0.06) {
+                ForEach(0..<3, id: \.self) { _ in
+                    Circle()
+                        .fill(Color(hex: "D8D8D8"))
+                        .frame(width: width * 0.12, height: width * 0.12)
+                        .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                }
+            }
+            Text("Other participants")
+                .font(.system(size: width * 0.03, weight: .medium))
+                .foregroundStyle(.black.opacity(0.6))
+        }
+    }
+    
     private func startIdle() {
         guard !isDragging else { return }
         withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
