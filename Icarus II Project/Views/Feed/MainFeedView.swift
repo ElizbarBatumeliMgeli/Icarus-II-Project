@@ -5,7 +5,6 @@
 //  Created by Elizbar Kheladze on 25/05/26.
 //
 
-
 import SwiftUI
 
 struct MainFeedView: View {
@@ -41,6 +40,7 @@ struct MainFeedView: View {
                         Text("Feed")
                             .font(.system(size: width * 0.106, weight: .semibold))
                             .foregroundStyle(.black)
+                            .opacity(0)
 
                         Spacer()
                         
@@ -52,7 +52,10 @@ struct MainFeedView: View {
 
                     Spacer(minLength: height * 0.055)
 
-                    if viewModel.feedCards.isEmpty {
+                    if viewModel.isLoading {
+                        LoadingFeedView(cardWidth: cardWidth, cardHeight: cardHeight)
+                        Spacer()
+                    } else if viewModel.feedCards.isEmpty {
                         EmptyFeedView(width: width, height: cardHeight)
                         Spacer()
                     } else {
@@ -470,3 +473,149 @@ struct PhysicalShuffle: View {
         .buttonStyle(PhysicalButtonStyle())
     }
 }
+struct LoadingFeedView: View {
+    let cardWidth: CGFloat
+    let cardHeight: CGFloat
+    
+    @State private var shimmerX: CGFloat = -1.2
+    @State private var idleOffsetY: CGFloat = 0
+    @State private var idleScale: CGFloat = 1
+
+    var body: some View {
+        ZStack {
+            // Backing tilted placeholders (matches the deck stack style)
+            RoundedRectangle(cornerRadius: cardWidth * 0.075, style: .continuous)
+                .fill(Color(hex: "D8D8D8"))
+                .frame(width: cardWidth, height: cardHeight * 0.96)
+                .rotationEffect(.degrees(-4.3))
+                .offset(x: -cardWidth * 0.035, y: cardHeight * 0.02)
+
+            RoundedRectangle(cornerRadius: cardWidth * 0.075, style: .continuous)
+                .fill(Color(hex: "989898"))
+                .frame(width: cardWidth, height: cardHeight * 0.96)
+                .rotationEffect(.degrees(4.4))
+                .offset(x: cardWidth * 0.035, y: -cardHeight * 0.006)
+
+            // Floating skeleton card with shimmer
+            SkeletonCardView(cardWidth: cardWidth, cardHeight: cardHeight)
+                .offset(y: idleOffsetY)
+                .scaleEffect(idleScale)
+                .overlay(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.0), Color.white.opacity(0.42), Color.white.opacity(0.0)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: cardWidth * 0.8, height: cardHeight)
+                    .offset(x: shimmerX * cardWidth)
+                    .rotationEffect(.degrees(12))
+                )
+                .mask(
+                    RoundedRectangle(cornerRadius: cardWidth * 0.08, style: .continuous)
+                        .frame(width: cardWidth, height: cardHeight)
+                )
+        }
+        .frame(height: cardHeight + cardHeight * 0.025)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                idleOffsetY = -cardHeight * 0.02
+            }
+            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                idleScale = 1.012
+            }
+            withAnimation(.linear(duration: 1.4).repeatForever(autoreverses: false)) {
+                shimmerX = 1.2
+            }
+        }
+    }
+}
+
+private struct SkeletonCardView: View {
+    let cardWidth: CGFloat
+    let cardHeight: CGFloat
+
+    var body: some View {
+        let radius = cardWidth * 0.08
+        // Using orange for the card's stylized borders and glow effects
+        let borderColor = Color.orange
+
+        return ZStack {
+            // Glow behind card
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(borderColor)
+                .frame(width: cardWidth * 0.96, height: cardHeight * 0.9)
+                .blur(radius: cardWidth * 0.1)
+                .blendMode(.plusLighter)
+                .allowsHitTesting(false)
+
+            // Main card surface
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.96),
+                            Color.white.opacity(0.9),
+                            Color(hex: "F1EEF8").opacity(0.88)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: borderColor.opacity(0.35), radius: cardWidth * 0.1, x: 0, y: cardWidth * 0.02)
+                .shadow(color: .black.opacity(0.24), radius: cardWidth * 0.025, x: 0, y: cardWidth * 0.012)
+
+            // Texture/Pattern Background
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(
+                    ImagePaint(
+                        image: Image("ELIZBARSVG"),
+                        sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1),
+                        scale: 0.3
+                    )
+                )
+                .opacity(0.12)
+                .blendMode(.multiply)
+                .allowsHitTesting(false)
+
+            // Premium Border rings
+            ZStack {
+                RoundedRectangle(cornerRadius: cardWidth * 0.07, style: .continuous)
+                    .stroke(borderColor.opacity(0.95), lineWidth: cardWidth * 0.030)
+                    .padding(cardWidth * 0.035)
+
+                RoundedRectangle(cornerRadius: cardWidth * 0.07, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.38),
+                                borderColor.opacity(0.85),
+                                borderColor.opacity(0.55),
+                                Color.black.opacity(0.16)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: cardWidth * 0.011
+                    )
+                    .padding(cardWidth * 0.041)
+
+                RoundedRectangle(cornerRadius: cardWidth * 0.07, style: .continuous)
+                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
+                    .padding(cardWidth * 0.049)
+
+                RoundedRectangle(cornerRadius: cardWidth * 0.07, style: .continuous)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    .blur(radius: 0.7)
+                    .padding(cardWidth * 0.031)
+            }
+
+            // Central Loading Animation
+            ProgressView()
+                .tint(borderColor)
+                .scaleEffect(cardWidth * 0.005) // Scale loading indicator dynamically with card width
+        }
+        .frame(width: cardWidth, height: cardHeight)
+        .compositingGroup()
+    }
+}
+
