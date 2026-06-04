@@ -191,17 +191,25 @@ struct EditableCardView: View {
         }
         .frame(width: width, height: height)
         .onAppear {
-            // Apply the current date on load if it's empty, formatting it immediately
+            // When editing an existing card, seed the picker from its saved event date.
+            if let existing = card.eventDate {
+                draftDate = existing
+            }
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yy"
             if card.dateText.isEmpty {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "dd/MM/yy"
                 card.dateText = formatter.string(from: draftDate)
+            }
+            // Keep the real event date in sync (used to expire matches after the day passes).
+            if card.eventDate == nil {
+                card.eventDate = draftDate
             }
         }
         .onChange(of: draftDate) { _, newDate in
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yy" // Forces strict formatting (e.g. 03/06/26)
             card.dateText = formatter.string(from: newDate)
+            card.eventDate = newDate
         }
     }
 

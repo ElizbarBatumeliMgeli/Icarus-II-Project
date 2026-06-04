@@ -22,6 +22,7 @@ final class DeckViewModel {
 
     private let repository = DeckCardRepository()
     private let matchRepository = MatchRepository()
+    private let profileRepository = ProfileRepository()
     var isLoading: Bool = false
     var errorMessage: String?
 
@@ -46,8 +47,9 @@ final class DeckViewModel {
     // EL - The swipe feed: cards from people I'm connected to (never my own), populated by loadFeed(); MainFeedView should read this instead of `cards`.
     var feedCards: [DeckCard] = []
 
-    // EL - Cards I've matched with (the ones I swiped right on), populated by loadMatchedCards(); MatchesView should read this.
-    var matchedCards: [DeckCard] = []
+    // EL - Cards I've matched with, enriched with owner + other matchers, populated by
+    // loadMatchedCards(); MatchesView reads this. Only shows events whose day hasn't passed.
+    var matchedCardInfos: [MatchedCardInfo] = []
 
     // UI-friendly mapping used in the profile deck (adjusts color for readability).
     var profileCards: [DeckCard] {
@@ -227,9 +229,10 @@ final class DeckViewModel {
         feedCards.removeAll { $0.id == card.id }
         actedCardIDs.insert(card.id.uuidString)   // keep the feed-exclusion cache current
 
-        // Instant feedback: show it in Matches immediately (deduped), then persist below.
-        if !matchedCards.contains(where: { $0.id == card.id }) {
-            matchedCards.insert(card, at: 0)
+        // Instant feedback: show it in Matches immediately (deduped). Owner + other matchers
+        // get filled in by the next loadMatchedCards() when the Matches screen opens.
+        if !matchedCardInfos.contains(where: { $0.id == card.id }) {
+            matchedCardInfos.insert(MatchedCardInfo(card: card, owner: nil, otherMatchers: []), at: 0)
         }
 
         let newMatch = Match(
@@ -305,7 +308,30 @@ final class DeckViewModel {
             // for feed-exclusion, but must not show up in Matches.
             let myMatches = try await matchRepository.forMatcher(currentOwnerID)
             let cardIDs = myMatches.filter { $0.status == .accepted }.map { $0.cardID }
-            matchedCards = try await repository.cards(withIDs: cardIDs)
+            let cards = try await repository.cards(withIDs: cardIDs)
+
+            // Keep a match only until the end of the day of its event. Cards without an
+            // event date never expire (we can't tell when they end).
+            let today = Calendar.current.startOfDay(for: Date())
+            let liveCards = cards.filter { card in
+                guard let event = card.eventDate else { return true }
+                return Calendar.current.startOfDay(for: event) >= today
+            }
+
+            // Enrich each card with its owner and the other people who matched it.
+            var infos: [MatchedCardInfo] = []
+            for card in liveCards {
+                let owner = try? await profileRepository.fetch(id: card.ownerID)
+
+                let cardMatches = try await matchRepository.forCard(card.id.uuidString)
+                let otherIDs = cardMatches
+                    .filter { $0.status == .accepted && $0.matcherID != currentOwnerID }
+                    .map { $0.matcherID }
+                let otherMatchers = try await profileRepository.users(withIDs: otherIDs)
+
+                infos.append(MatchedCardInfo(card: card, owner: owner, otherMatchers: otherMatchers))
+            }
+            matchedCardInfos = infos
         } catch {
             errorMessage = error.localizedDescription
         }

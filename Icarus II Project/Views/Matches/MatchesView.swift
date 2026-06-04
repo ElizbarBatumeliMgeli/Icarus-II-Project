@@ -61,7 +61,7 @@ struct MatchesView: View {
 
                     // Main List Area
                     ScrollView {
-                        if viewModel.matchedCards.isEmpty {
+                        if viewModel.matchedCardInfos.isEmpty {
                             // Empty State
                             VStack(spacing: height * 0.02) {
                                 Spacer()
@@ -80,13 +80,13 @@ struct MatchesView: View {
                         } else {
                             // Matches List
                             LazyVStack(spacing: width * 0.06) {
-                                ForEach(viewModel.matchedCards) { card in
+                                ForEach(viewModel.matchedCardInfos) { info in
                                     Button {
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                            expandedCard = card
+                                            expandedCard = info.card
                                         }
                                     } label: {
-                                        MatchRowCardView(card: card, width: width)
+                                        MatchRowCardView(info: info, width: width)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -414,8 +414,10 @@ private struct ExpandedMatchOverlay: View {
 
 // ── MatchRowCardView (List Item) ─────────────────────────────────────────────
 private struct MatchRowCardView: View {
-    let card: DeckCard
+    let info: MatchedCardInfo
     let width: CGFloat
+
+    private var card: DeckCard { info.card }
 
     var body: some View {
         let corner = width * 0.06
@@ -456,14 +458,23 @@ private struct MatchRowCardView: View {
 
             VStack(alignment: .leading, spacing: width * 0.04) {
                 
-                // Profile section
+                // Profile section — the card's owner (color + initial)
                 HStack(spacing: width * 0.02) {
+                    let ownerColor = info.owner?.avatarColor ?? card.color
+                    let ownerInitial = info.owner?.initial
+                        ?? card.ownerName.trimmingCharacters(in: .whitespacesAndNewlines).prefix(1).uppercased()
+
                     Circle()
-                        .fill(Color(hex: "BBE4C6"))
+                        .fill(ownerColor)
                         .frame(width: width * 0.08, height: width * 0.08)
                         .overlay(Circle().stroke(Color.black.opacity(0.1), lineWidth: 1))
-                    
-                    Text(card.ownerName.replacingOccurrences(of: "\n", with: " "))
+                        .overlay(
+                            Text(ownerInitial)
+                                .font(.system(size: width * 0.04, weight: .bold))
+                                .foregroundStyle(.white)
+                        )
+
+                    Text((info.owner?.displayName ?? card.ownerName).replacingOccurrences(of: "\n", with: " "))
                         .font(.system(size: width * 0.038, weight: .medium))
                         .foregroundStyle(.black.opacity(0.75))
                         .lineLimit(1)
@@ -490,31 +501,28 @@ private struct MatchRowCardView: View {
 
                     Spacer()
 
-                    // Participants on bottom right
+                    // Participants on bottom right — others who also matched this card
                     VStack(alignment: .trailing, spacing: width * 0.01) {
                         Text("other participants")
                             .font(.system(size: width * 0.025, weight: .medium))
                             .foregroundStyle(.black.opacity(0.6))
-                        
-                        HStack(spacing: -width * 0.035) {
-                            Image("BIBI")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: width * 0.075, height: width * 0.075)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Image("BIBI")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: width * 0.075, height: width * 0.075)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
-                            Image("BIBI")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: width * 0.075, height: width * 0.075)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(.black, lineWidth: 1.5))
+
+                        if info.otherMatchers.isEmpty {
+                            Text("Just you so far")
+                                .font(.system(size: width * 0.03, weight: .medium))
+                                .foregroundStyle(.black.opacity(0.4))
+                        } else {
+                            HStack(spacing: -width * 0.035) {
+                                ForEach(info.otherMatchers.prefix(3)) { user in
+                                    matcherBadge(color: user.avatarColor, text: user.initial)
+                                }
+                                if info.otherMatchers.count > 3 {
+                                    matcherBadge(
+                                        color: Color.black.opacity(0.6),
+                                        text: "+\(info.otherMatchers.count - 3)"
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -526,6 +534,19 @@ private struct MatchRowCardView: View {
         .shadow(color: .black.opacity(0.2), radius: width * 0.02, x: 0, y: width * 0.01)
     }
     
+    // A small circular avatar (color + initial) for a participant.
+    private func matcherBadge(color: Color, text: String) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: width * 0.075, height: width * 0.075)
+            .overlay(Circle().stroke(.black, lineWidth: 1.5))
+            .overlay(
+                Text(text)
+                    .font(.system(size: width * 0.032, weight: .bold))
+                    .foregroundStyle(.white)
+            )
+    }
+
     // Sub-view function for the Date & Location
     private func rowInfo(text: String, icon: String, width: CGFloat) -> some View {
         HStack(spacing: width * 0.015) {
