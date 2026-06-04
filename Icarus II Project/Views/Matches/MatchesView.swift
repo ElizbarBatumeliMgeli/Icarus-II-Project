@@ -61,7 +61,7 @@ struct MatchesView: View {
 
                     // Main List Area
                     ScrollView {
-                        if viewModel.cards.isEmpty {
+                        if viewModel.matchedCards.isEmpty {
                             // Empty State
                             VStack(spacing: height * 0.02) {
                                 Spacer()
@@ -80,7 +80,7 @@ struct MatchesView: View {
                         } else {
                             // Matches List
                             LazyVStack(spacing: width * 0.06) {
-                                ForEach(viewModel.cards) { card in
+                                ForEach(viewModel.matchedCards) { card in
                                     Button {
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                             expandedCard = card
@@ -133,6 +133,10 @@ struct MatchesView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden()
+        // Load the cards I've matched with from Firestore whenever this screen appears.
+        .task {
+            await viewModel.reloadMatchedCards()
+        }
     }
 }
 

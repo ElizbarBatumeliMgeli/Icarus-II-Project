@@ -25,6 +25,12 @@ final class DeckViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
 
+    // Card ids I've already acted on (matched or dismissed), used to filter the feed.
+    // Seeded ONCE per login from Firestore, then kept up to date locally on each swipe —
+    // so a feed refresh no longer re-downloads the whole swipe history every time.
+    private var actedCardIDs: Set<String> = []
+    private var actedSetLoaded = false
+
     // EL - My own cards (my personal deck). Populated by fetchCards() from Firestore.
     var cards: [DeckCard] = []
 
@@ -71,8 +77,15 @@ final class DeckViewModel {
     // profile loads, and whenever it changes). Scopes the deck/feed queries to the real
     // Firebase UID and the user's real connections.
     func bind(to user: User) {
+        let userChanged = user.id != currentOwnerID
         self.user = user
         self.currentOwnerID = user.id
+        // Only drop the acted-on cache when the actual account changes — not on every
+        // re-bind (e.g. a connections update re-binds the same user).
+        if userChanged {
+            actedCardIDs = []
+            actedSetLoaded = false
+        }
     }
 
     // MARK: - My deck
@@ -117,11 +130,16 @@ final class DeckViewModel {
             // automatically, since my own id is never in my connections list.
             let connectionCards = try await repository.feed(fromOwnerIDs: user.connections)
 
-            // Hide cards I've already acted on — matched (.accepted) OR dismissed (.blocked) —
-            // so they never resurrect on a refresh.
-            let actedOn = try await matchRepository.forMatcher(currentOwnerID)
-            let actedCardIDs = Set(actedOn.map { $0.cardID })
+            // Seed the acted-on set ONCE from Firestore (matched .accepted + dismissed .blocked).
+            // After that it's maintained locally by match()/dismiss(), so refreshes don't
+            // re-download the whole swipe history.
+            if !actedSetLoaded {
+                let actedOn = try await matchRepository.forMatcher(currentOwnerID)
+                actedCardIDs = Set(actedOn.map { $0.cardID })
+                actedSetLoaded = true
+            }
 
+            // Hide cards I've already acted on so they never resurrect on a refresh.
             feedCards = connectionCards.filter { !actedCardIDs.contains($0.id.uuidString) }
         } catch {
             errorMessage = error.localizedDescription
@@ -207,6 +225,12 @@ final class DeckViewModel {
     // EL - RIGHT / like swipe: records a match between me (the matcher) and the card's owner, removes it from `feedCards`, makes it appear in `matchedCards`, and saves in the background (no owner approval — the swipe is the match).
     func match(_ card: DeckCard) {
         feedCards.removeAll { $0.id == card.id }
+        actedCardIDs.insert(card.id.uuidString)   // keep the feed-exclusion cache current
+
+        // Instant feedback: show it in Matches immediately (deduped), then persist below.
+        if !matchedCards.contains(where: { $0.id == card.id }) {
+            matchedCards.insert(card, at: 0)
+        }
 
         let newMatch = Match(
             id: Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID),
@@ -230,6 +254,7 @@ final class DeckViewModel {
     // "dismissed" marker (status .blocked) so it stays out of the feed across refreshes.
     func dismiss(_ card: DeckCard) {
         feedCards.removeAll { $0.id == card.id }
+        actedCardIDs.insert(card.id.uuidString)   // keep the feed-exclusion cache current
 
         let dismissal = Match(
             id: Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID),
@@ -263,6 +288,11 @@ final class DeckViewModel {
     // EL - Loads the cards I've matched with into `matchedCards` (reads my matches, then fetches those cards); call this when MatchesView appears.
     func loadMatchedCards() {
         Task { await loadMatchedCardsFromRepository() }
+    }
+
+    // Async variant for views that want to await the refresh (e.g. .task).
+    func reloadMatchedCards() async {
+        await loadMatchedCardsFromRepository()
     }
 
     private func loadMatchedCardsFromRepository() async {
