@@ -62,6 +62,7 @@ struct AppRootView: View {
                     // Scope the deck/feed to the real signed-in user + their connections.
                     if let signedInUser = userViewModel.user {
                         viewModel.bind(to: signedInUser)
+                        await viewModel.reloadCards()   // my own deck (persisted cards)
                         await viewModel.reloadFeed()
                     }
                 }

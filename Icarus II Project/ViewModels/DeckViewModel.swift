@@ -97,13 +97,27 @@ final class DeckViewModel {
         Task { await loadFromRepository() }
     }
 
+    // Async variant for views that want to await the refresh (e.g. .task).
+    func reloadCards() async {
+        await loadFromRepository()
+    }
+
+    // True while the card's event day hasn't passed. Cards without an event date
+    // never expire (we can't tell when they end).
+    private func isEventLive(_ card: DeckCard) -> Bool {
+        guard let event = card.eventDate else { return true }
+        return Calendar.current.startOfDay(for: event) >= Calendar.current.startOfDay(for: Date())
+    }
+
     private func loadFromRepository() async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
         do {
-            cards = try await repository.fetch(ownerID: currentOwnerID)
+            // Show my cards through the end of each event's day; drop expired ones.
+            let mine = try await repository.fetch(ownerID: currentOwnerID)
+            cards = mine.filter { isEventLive($0) }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -310,13 +324,8 @@ final class DeckViewModel {
             let cardIDs = myMatches.filter { $0.status == .accepted }.map { $0.cardID }
             let cards = try await repository.cards(withIDs: cardIDs)
 
-            // Keep a match only until the end of the day of its event. Cards without an
-            // event date never expire (we can't tell when they end).
-            let today = Calendar.current.startOfDay(for: Date())
-            let liveCards = cards.filter { card in
-                guard let event = card.eventDate else { return true }
-                return Calendar.current.startOfDay(for: event) >= today
-            }
+            // Keep a match only until the end of the day of its event.
+            let liveCards = cards.filter { isEventLive($0) }
 
             // Enrich each card with its owner and the other people who matched it.
             var infos: [MatchedCardInfo] = []
