@@ -129,6 +129,9 @@ final class UserViewModel {
             return
         }
         
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             if let targetUser = try await repository.user(withConnectionCode: code) {
                 pendingConnectionUser = targetUser

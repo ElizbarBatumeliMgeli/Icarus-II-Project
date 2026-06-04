@@ -96,6 +96,20 @@ struct AppRootView: View {
             Text(userViewModel.errorMessage ?? "")
         }
         .environment(userViewModel)
+        .overlay {
+            if userViewModel.isLoading {
+                ZStack {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                    
+                    ProgressView("Loading...")
+                        .padding()
+                        .background(Color(.systemBackground))
+                        .cornerRadius(12)
+                        .shadow(radius: 10)
+                }
+            }
+        }
     }
 }
 
