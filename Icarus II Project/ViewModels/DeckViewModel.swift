@@ -14,22 +14,23 @@ final class DeckViewModel {
     // This ViewModel drives the UI and proxies CRUD through `DeckCardRepository` (cards)
     // and `MatchRepository` (matches). Persistence target: Firestore.
 
-    var user = User(id: "test-user-1", firstName: "Marco", lastName: "Rocco", avatarColorHex: "D3D3D3")
-    // OLA: replace with the signed-in user from your auth/profile once it lands
-    // Owner id used to scope card queries. Hardcoded until Sign in with Apple is wired up
-    // TODO(auth): replace with `Auth.auth().currentUser?.uid` once `AuthService` is in place
-    var currentOwnerID: String = "test-user-1"
-    // For development: include my own cards in the feed when there are no connections
-    var showOwnCardsInFeedForTesting: Bool = true
+    // Bound to the signed-in user via `bind(to:)` from AppRootView once auth/profile loads.
+    // Empty placeholder until then, so nothing real is queried.
+    var user = User(id: "")
+    // Owner id used to scope card queries — set to the real Firebase UID by `bind(to:)`.
+    var currentOwnerID: String = ""
 
     private let repository = DeckCardRepository()
     private let matchRepository = MatchRepository()
     var isLoading: Bool = false
     var errorMessage: String?
 
-    // EL - My own cards (my personal deck). Populated by fetchCards(). The profile screen uses this.
-    // Mock seed data — visible until the first fetchCards() returns from Firestore.
-    var cards: [DeckCard] = [
+    // EL - My own cards (my personal deck). Populated by fetchCards() from Firestore.
+    var cards: [DeckCard] = []
+
+    // Sample cards for SwiftUI previews / manual testing ONLY — NOT used in the real flow.
+    // To try placeholder data, assign `DeckViewModel.mockCards` to `cards` from a #Preview.
+    static let mockCards: [DeckCard] = [
         DeckCard(title: "Design a\ntable", category: "Food", dateText: "Tomorrow", location: "Naples", color: Color(.orange)),
         DeckCard(title: "Museum\nvisit", category: "Art", dateText: "Weekend", location: "Naples", color: Color(hex: "D8D8D8")),
         DeckCard(title: "Coffee\nwalk", category: "Social", dateText: "Today", location: "Centro", color: Color(hex: "5F5E69")),
@@ -63,6 +64,16 @@ final class DeckViewModel {
 
     // Inline-draft state for the new card editor flow (from main's UI).
     var draftCard: DeckCard?
+
+    // MARK: - Session binding
+
+    // Bind this view model to the signed-in user (call from AppRootView once the real
+    // profile loads, and whenever it changes). Scopes the deck/feed queries to the real
+    // Firebase UID and the user's real connections.
+    func bind(to user: User) {
+        self.user = user
+        self.currentOwnerID = user.id
+    }
 
     // MARK: - My deck
 
@@ -101,17 +112,10 @@ final class DeckViewModel {
         defer { isLoading = false }
 
         do {
-            // If we have connection IDs, load only from them; otherwise, load everything and exclude my own.
-            if !user.connections.isEmpty {
-                feedCards = try await repository.feed(fromOwnerIDs: user.connections)
-            } else {
-                // Fallback: global feed minus my own cards
-                var all = try await repository.all()
-                if !showOwnCardsInFeedForTesting {
-                    all.removeAll { $0.ownerID == currentOwnerID }
-                }
-                feedCards = all
-            }
+            // Strictly connection-scoped: only cards owned by people I'm connected to.
+            // No connections → empty feed (EmptyFeedView). My own cards are excluded
+            // automatically, since my own id is never in my connections list.
+            feedCards = try await repository.feed(fromOwnerIDs: user.connections)
         } catch {
             errorMessage = error.localizedDescription
         }
