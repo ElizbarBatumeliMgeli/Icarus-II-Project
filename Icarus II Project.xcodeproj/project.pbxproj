@@ -13,6 +13,8 @@
 		A1D5898E2FC81BE800649DE9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898D2FC81BE800649DE9 /* FirebaseAuth */; };
 		A1D589902FC81BE800649DE9 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898F2FC81BE800649DE9 /* FirebaseCore */; };
 		A1D589922FC81BE800649DE9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D589912FC81BE800649DE9 /* FirebaseFirestore */; };
+		AF0DDE332FC98A3E00328F9B /* AppSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0DDE322FC98A3D00328F9B /* AppSessionView.swift */; };
+		AFC187322FC89A2C001CD7C9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AFC187312FC89A2C001CD7C9 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,11 +22,26 @@
 		1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = blaBlaApp.swift; sourceTree = "<group>"; };
 		1A53CA052FC71C260097DB2A /* DEAL! icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "DEAL! icon.icon"; sourceTree = "<group>"; };
 		1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Icarus II Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AF0DDE322FC98A3D00328F9B /* AppSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSessionView.swift; sourceTree = "<group>"; };
+		AFC187312FC89A2C001CD7C9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Icarus-II-Project-Info.plist",
+			);
+			target = 1A62FE562FBB1AC0002D01F7 /* Icarus II Project */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A62FE592FBB1AC0002D01F7 /* Icarus II Project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */,
+			);
 			path = "Icarus II Project";
 			sourceTree = "<group>";
 		};
@@ -50,8 +67,10 @@
 				1A53CA052FC71C260097DB2A /* DEAL! icon.icon */,
 				1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */,
 				1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */,
+				AF0DDE322FC98A3D00328F9B /* AppSessionView.swift */,
 				1A62FE592FBB1AC0002D01F7 /* Icarus II Project */,
 				1A62FE582FBB1AC0002D01F7 /* Products */,
+				AFC187312FC89A2C001CD7C9 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -133,6 +152,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFC187322FC89A2C001CD7C9 /* GoogleService-Info.plist in Resources */,
 				1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -146,6 +166,7 @@
 			files = (
 				1A53CA012FC71BA70097DB2A /* blaBlaApp.swift in Sources */,
 				1A53CA022FC71BA70097DB2A /* AppRootView.swift in Sources */,
+				AF0DDE332FC98A3E00328F9B /* AppSessionView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,13 +297,17 @@
 		1A62FE632FBB1AC0002D01F7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "DEAL! icon";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Icarus II Project/Icarus II Project.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Deal;
 				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -296,6 +321,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Alpha123.test1123;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -309,13 +335,17 @@
 		1A62FE642FBB1AC0002D01F7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "DEAL! icon";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Icarus II Project/Icarus II Project.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R2WDS6ZMQ6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Icarus-II-Project-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Deal;
 				INFOPLIST_KEY_UIAppFonts = "Nohemi-Medium.otf";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -329,6 +359,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Alpha123.test1123;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;

@@ -15,6 +15,7 @@ final class UserViewModel {
     var user: User?
     var isLoading: Bool = false
     var errorMessage: String?
+    var pendingConnectionCode: String?
 
     private let repository = ProfileRepository()
 
@@ -85,7 +86,10 @@ final class UserViewModel {
 
         isLoading = true
         errorMessage = nil
-        defer { isLoading = false }
+        defer { 
+            isLoading = false 
+            pendingConnectionCode = nil
+        }
 
         do {
             guard let other = try await repository.user(withConnectionCode: trimmed) else {
@@ -112,9 +116,18 @@ final class UserViewModel {
         }
     }
 
-    // Loads the full User records for the current user's connections.
     func loadConnections() async throws -> [User] {
         guard let me = user else { return [] }
         return try await repository.users(withIDs: me.connections)
+    }
+
+    func handleDeepLink(_ url: URL) {
+        guard url.scheme == "icarus",
+              url.host == "connect",
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+              let code = components.queryItems?.first(where: { $0.name == "code" })?.value else {
+            return
+        }
+        pendingConnectionCode = code
     }
 }

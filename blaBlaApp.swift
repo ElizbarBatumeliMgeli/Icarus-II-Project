@@ -4,6 +4,9 @@
 //
 //  Created by Elizbar Kheladze on 21/05/26.
 //
+//  App entry point (@main). Launches AppSessionView, which routes to the
+//  sign-in screen or the main app depending on auth state.
+//
 
 import SwiftUI
 import FirebaseCore
@@ -22,7 +25,7 @@ struct blaBlaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            AppRootView()
+            AppSessionView()
         }
     }
 }

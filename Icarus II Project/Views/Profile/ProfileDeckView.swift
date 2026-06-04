@@ -11,6 +11,8 @@ struct ProfileDeckView: View {
     let openConnections: () -> Void
     
     @State private var isDeckEditing: Bool = false
+    
+    @Environment(UserViewModel.self) var userViewModel
 
     var body: some View {
         GeometryReader { proxy in
@@ -70,42 +72,55 @@ struct ProfileDeckView: View {
                         VStack(spacing: height * 0.018) {
                             ZStack {
                                 Circle()
-                                    .fill(viewModel.user.avatarColor)
+                                    .fill(userViewModel.user?.avatarColor ?? Color(hex: "D3D3D3"))
                                     .frame(width: avatar * 1.45, height: avatar * 1.45)
                                     .shadow(color: .black.opacity(0.08), radius: width * 0.04, x: 0, y: width * 0.02)
                                     .glassEffect(.regular, in: Circle())
 
-                                Image("BIBI")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: avatar * 1.32, height: avatar * 1.32)
-                                    .clipShape(Circle())
-                            }
-
-                            // Profile Name and Share Button (Moved to the right)
-                            HStack(spacing: width * 0.03) {
-                                Text(viewModel.user.name)
-                                    .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
+                                // Default avatar: first letter of the signed-in user's name.
+                                Text(userViewModel.user?.initial ?? "")
+                                    .font(.custom("Nohemi-Medium", fixedSize: avatar * 0.62))
                                     .foregroundStyle(.white)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.75)
-                                
-                                CircleIconButton(systemName: "square.and.arrow.up", size: width * 0.085)
                             }
 
-                            // Connections Button
-                            Button {
-                                openConnections()
-                            } label: {
-                                Text("Connections")
-                                    .font(.system(size: width * 0.045, weight: .semibold))
-                                    .foregroundStyle(.black)
-                                    .padding(.horizontal, width * 0.06)
-                                    .frame(height: height * 0.052)
-                                    .background(
-                                        Capsule(style: .continuous)
-                                            .fill(Color(hex: "D3D3D3"))
-                                    )
+                            Text(userViewModel.user?.displayName ?? "")
+                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+
+                            HStack(spacing: width * 0.04) {
+                                Button {
+                                    openConnections()
+                                } label: {
+                                    Text("Connections")
+                                        .font(.system(size: width * 0.045, weight: .semibold))
+                                        .foregroundStyle(.black)
+                                        .padding(.horizontal, width * 0.06)
+                                        .frame(height: height * 0.052)
+                                        .background(
+                                            Capsule(style: .continuous)
+                                                .fill(Color(hex: "D3D3D3"))
+                                        )
+                                }
+                                .buttonStyle(.plain)
+
+                                // Share a permanent, individual invite link (icarus://connect?code=…).
+                                // The link embeds the user's permanent connectionCode, so it never expires.
+                                if let link = userViewModel.user?.connectionLink,
+                                   let code = userViewModel.user?.connectionCode, !code.isEmpty {
+                                    ShareLink(
+                                        item: link,
+                                        subject: Text("Connect with me on DEAL!"),
+                                        message: Text("Tap to connect with me on DEAL — or enter my code: \(code)")
+                                    ) {
+                                        CircleIconLabel(systemName: "square.and.arrow.up", size: icon)
+                                    }
+                                    .buttonStyle(.plain)
+                                } else {
+                                    // Until the signed-in profile loads, show the icon inert.
+                                    CircleIconButton(systemName: "square.and.arrow.up", size: icon)
+                                }
                             }
                             .buttonStyle(.plain)
                         }
