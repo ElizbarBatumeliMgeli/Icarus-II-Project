@@ -15,7 +15,7 @@ final class UserViewModel {
     var user: User?
     var isLoading: Bool = false
     var errorMessage: String?
-    var pendingConnectionCode: String?
+    var pendingConnectionUser: User?
 
     private let repository = ProfileRepository()
 
@@ -88,7 +88,7 @@ final class UserViewModel {
         errorMessage = nil
         defer { 
             isLoading = false 
-            pendingConnectionCode = nil
+            pendingConnectionUser = nil
         }
 
         do {
@@ -121,13 +121,22 @@ final class UserViewModel {
         return try await repository.users(withIDs: me.connections)
     }
 
-    func handleDeepLink(_ url: URL) {
+    func handleDeepLink(_ url: URL) async {
         guard url.scheme == "icarus",
               url.host == "connect",
               let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
               let code = components.queryItems?.first(where: { $0.name == "code" })?.value else {
             return
         }
-        pendingConnectionCode = code
+        
+        do {
+            if let targetUser = try await repository.user(withConnectionCode: code) {
+                pendingConnectionUser = targetUser
+            } else {
+                errorMessage = "Invalid connection link."
+            }
+        } catch {
+            errorMessage = "Failed to load connection data: \(error.localizedDescription)"
+        }
     }
 }

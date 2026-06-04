@@ -63,14 +63,38 @@ struct AppRootView: View {
             }
         }
         .onOpenURL { url in
-            userViewModel.handleDeepLink(url)
+            Task {
+                await userViewModel.handleDeepLink(url)
+            }
         }
-        // TODO(EL): Observe `userViewModel.pendingConnectionCode`.
-        // When it is not nil, show your custom Confirmation Popup or use .alert (you are the wizard here). 
-        // 1. If they tap Cancel, set `userViewModel.pendingConnectionCode = nil` to close it.
-        // 2. If they tap Connect, call `await userViewModel.connect(usingCode:)` (it will auto-close when done).
-        // 3. Disable your Connect button while `userViewModel.isLoading` is true.
-        // 4. Observe `userViewModel.errorMessage` for any connection failures.
+        .alert("Connect Request", isPresented: Binding(
+            get: { userViewModel.pendingConnectionUser != nil && userViewModel.user != nil },
+            set: { if !$0 { userViewModel.pendingConnectionUser = nil } }
+        )) {
+            Button("Cancel", role: .cancel) {
+                userViewModel.pendingConnectionUser = nil
+            }
+            Button("Connect") {
+                if let targetCode = userViewModel.pendingConnectionUser?.connectionCode {
+                    Task {
+                        await userViewModel.connect(usingCode: targetCode)
+                    }
+                }
+            }
+            .disabled(userViewModel.isLoading)
+        } message: {
+            if let targetUser = userViewModel.pendingConnectionUser {
+                Text("Would you like to connect with \(targetUser.firstName) \(targetUser.lastName)?")
+            }
+        }
+        .alert("Connection Failed", isPresented: Binding(
+            get: { userViewModel.errorMessage != nil },
+            set: { if !$0 { userViewModel.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(userViewModel.errorMessage ?? "")
+        }
         .environment(userViewModel)
     }
 }
