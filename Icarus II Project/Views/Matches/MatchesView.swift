@@ -115,13 +115,13 @@ struct MatchesView: View {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedCard = nil
                             }
-                            // TODO(OLA): Record a failure/can't-do action for this match.
+                            Task { await viewModel.cancelMatch(card: card) }
                         },
                         onSuccess: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedCard = nil
                             }
-                            // TODO(OLA): Mark this match as completed/success.
+                            Task { await viewModel.completeMatch(card: card) }
                         }
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
