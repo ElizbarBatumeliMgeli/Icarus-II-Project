@@ -189,6 +189,14 @@
     color: var(--text-dark);
     line-height: 1.2;
   }
+  .app-card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-dark);
+    margin: 1.35rem 0 0.5rem;
+  }
+  .app-card h3:first-of-type { margin-top: 0.3rem; }
   .app-card p {
     font-size: 0.92rem;
     color: rgba(17,17,20,0.65);
@@ -197,6 +205,59 @@
   }
   .app-card p:last-child { margin-bottom: 0; }
   .app-card strong { color: var(--text-dark); font-weight: 600; }
+  .app-card a { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .app-card a:hover { text-decoration: underline; }
+  .app-card code {
+    background: rgba(17,17,20,0.05);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    color: var(--text-dark);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Plain bulleted list inside a white card */
+  .card-list { list-style: none; display: flex; flex-direction: column; gap: 7px; margin: 0.65rem 0 0.4rem; }
+  .card-list li {
+    font-size: 0.88rem;
+    color: rgba(17,17,20,0.62);
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    line-height: 1.55;
+  }
+  .card-list li::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    background: var(--blue);
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+  .card-list.green li::before { background: var(--green-btn); }
+
+  /* Detailed data table inside a white card */
+  .data-table { width: 100%; border-collapse: collapse; margin: 0.7rem 0 0.4rem; font-size: 0.8rem; }
+  .data-table th, .data-table td {
+    border: 1px solid rgba(17,17,20,0.1);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .data-table th {
+    background: rgba(37,99,255,0.07);
+    color: var(--blue);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .data-table td { color: rgba(17,17,20,0.62); line-height: 1.5; }
+  @media (max-width: 560px) {
+    .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+    .data-table thead { display: none; }
+    .data-table tr { border: 1px solid rgba(17,17,20,0.12); border-radius: 12px; padding: 0.4rem; margin-bottom: 0.7rem; }
+    .data-table td { border: none; padding: 4px 8px; }
+    .data-table td::before { content: attr(data-label); display: block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue); margin-bottom: 1px; }
+  }
 
   /* Card authored-by line — like "By Marco Rocco" in the screenshot */
   .card-author {
@@ -236,6 +297,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-bottom: 0.7rem;
+    margin-top: 0;
   }
   .list-col.yes h3 { color: var(--blue); }
   .list-col.no  h3 { color: #16a34a; }
@@ -458,7 +520,7 @@
 <div class="hero">
   <span class="hero-eyebrow">Legal</span>
   <h1>Privacy<br><em>Policy</em></h1>
-  <p class="hero-date">Last updated: May 27, 2026</p>
+  <p class="hero-date">Last updated: June 5, 2026</p>
 </div>
 
 <div class="container">
@@ -467,49 +529,128 @@
   <div class="app-card purple-card">
     <span class="card-label">Welcome</span>
     <h2>Deal, by IcarusII</h2>
-    <p>We respect your privacy and are committed to protecting your personal information. This policy explains what we collect, how we use it, and the choices you have regarding your data.</p>
+    <p>We respect your privacy and are committed to protecting your personal information. This policy explains, in detail, what data Deal collects, why, where it is stored, who can see it, and the rights and choices you have.</p>
     <div class="card-author">icarus.ii.studio@gmail.com</div>
   </div>
 
-  <!-- 01 WHAT WE COLLECT -->
+  <!-- 01 WHO WE ARE -->
   <div class="app-card">
     <span class="card-label">Section 01</span>
+    <h2>Who We Are</h2>
+    <p>Deal is developed by <strong>IcarusII Studio</strong>, which acts as the data controller for your information. For any privacy question or request, contact us at <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 02 INFORMATION WE COLLECT -->
+  <div class="app-card">
+    <span class="card-label">Section 02</span>
     <h2>Information We Collect</h2>
+    <p>Deal stores only the data needed to run the app. Here is everything we actually collect and store.</p>
+
+    <h3>Account &amp; profile data</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data</th><th>Source</th><th>Where it is stored</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Data">Apple user identifier</td>
+          <td data-label="Source">Sign in with Apple</td>
+          <td data-label="Stored">Firebase Authentication &amp; device Keychain</td>
+          <td data-label="Why">To identify your account and keep you signed in</td>
+        </tr>
+        <tr>
+          <td data-label="Data">First &amp; last name</td>
+          <td data-label="Source">Sign in with Apple (provided once)</td>
+          <td data-label="Stored">Firebase Firestore; cached on device</td>
+          <td data-label="Why">Shown on your profile and cards so connections recognise you</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Avatar colour</td>
+          <td data-label="Source">Generated / chosen in-app</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">Visual identity in the app</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Connection code</td>
+          <td data-label="Source">Generated in-app</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">A shareable code so others can connect with you</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Your connections list</td>
+          <td data-label="Source">Created when you connect with someone</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">Determines whose cards appear in your feed</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Content you create (cards)</h3>
+    <p>When you create a card describing something you want to do, we store the text you enter: the title, a category tag, the location text you type in the “Where?” field, the dates you choose, and an accent colour.</p>
+    <p><strong>Note:</strong> the location is free text that you type — Deal does not read your GPS or device location.</p>
+
+    <h3>Email address</h3>
+    <p>When you sign in, Apple’s screen may ask whether you want to share your email with Deal. <strong>Even if you choose to share it, Deal does not store or use your email address.</strong> The app does not save it to our servers, and the team has no access to it. To get back into your account, you simply sign in with Apple again.</p>
+
+    <h3>Interaction data (matches)</h3>
+    <p>When you swipe on a card, we record the action so the app works correctly. Each record links the card, its owner, you, the result (matched or dismissed), and a timestamp. This lets us show your matches and avoid showing you the same card twice.</p>
+
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 03 WHAT WE NEVER COLLECT -->
+  <div class="app-card">
+    <span class="card-label">Section 03</span>
+    <h2>What We Never Collect</h2>
     <div class="split-lists">
-      <div class="list-col yes">
-        <h3>We collect</h3>
-        <ul>
-          <li>Email address</li>
-          <li>Username</li>
-          <li>Sign in with Apple data</li>
-        </ul>
-      </div>
       <div class="list-col no">
         <h3>We never collect</h3>
         <ul>
           <li>Phone numbers</li>
-          <li>GPS location</li>
+          <li>GPS / device location</li>
           <li>Photos or videos</li>
           <li>Contacts</li>
+        </ul>
+      </div>
+      <div class="list-col no">
+        <h3>&nbsp;</h3>
+        <ul>
           <li>Payment info</li>
-          <li>Ad identifiers</li>
+          <li>Advertising identifiers</li>
           <li>Analytics / crash data</li>
+          <li>Your email address</li>
         </ul>
       </div>
     </div>
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 02 HOW WE USE -->
+  <!-- 04 VISIBLE TO OTHERS -->
   <div class="app-card">
-    <span class="card-label">Section 02</span>
+    <span class="card-label">Section 04</span>
+    <h2>Information Visible to Other Users</h2>
+    <p>Deal is a social app, so some of your data is shown to other people by design:</p>
+    <ul class="card-list">
+      <li><strong>Your cards</strong> (title, category, location text, dates) are shown in the feed of users you are connected to.</li>
+      <li><strong>Your name and avatar colour</strong> are shown to people you connect with and people you match with.</li>
+      <li><strong>Your connection code</strong> is visible only when you choose to share it.</li>
+    </ul>
+    <p>People you are <strong>not</strong> connected to cannot see your cards.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 05 HOW WE USE -->
+  <div class="app-card">
+    <span class="card-label">Section 05</span>
     <h2>How We Use Your Information</h2>
-    <p>We use your data solely to operate the app — nothing more.</p>
+    <p>We use your data solely to operate the app:</p>
     <div class="tag-row">
       <span class="tag blue">Create &amp; manage account</span>
       <span class="tag blue">Sign in with Apple</span>
-      <span class="tag blue">App functionality</span>
-      <span class="tag blue">Match notifications</span>
+      <span class="tag blue">Build your feed</span>
+      <span class="tag blue">Record matches</span>
+      <span class="tag blue">Connect with users</span>
     </div>
     <div class="card-divider"></div>
     <p style="font-size:0.82rem; color:rgba(17,17,20,0.4); margin-bottom:0.5rem;">We do not use your data for:</p>
@@ -522,22 +663,22 @@
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 03 AUTH -->
+  <!-- 06 AUTH -->
   <div class="app-card">
-    <span class="card-label">Section 03</span>
+    <span class="card-label">Section 06</span>
     <h2>Authentication</h2>
-    <p>Deal supports authentication exclusively through <strong>Sign in with Apple</strong>, provided by Apple Inc. We never handle or store your raw credentials.</p>
+    <p>Deal supports authentication exclusively through <strong>Sign in with Apple</strong>, provided by Apple Inc. We never see, handle, or store your Apple password. Sign-in is verified using a one-time nonce.</p>
     <div class="tag-row">
       <span class="tag gray">Sign in with Apple</span>
     </div>
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 04 STORAGE & SECURITY -->
+  <!-- 07 STORAGE & SECURITY -->
   <div class="app-card">
-    <span class="card-label">Section 04</span>
+    <span class="card-label">Section 07</span>
     <h2>Data Storage &amp; Security</h2>
-    <p>User data is securely stored using <strong>Google Firebase</strong>. We implement appropriate security measures to protect your information.</p>
+    <p>Your data is stored using <strong>Google Firebase</strong> (Authentication and Cloud Firestore) and is encrypted in transit. On your device, your Apple user ID is stored in the secure Keychain and a small profile cache is kept in app storage.</p>
     <div class="sec-grid">
       <div class="sec-item">
         <span class="si-icon">🔒</span>
@@ -546,8 +687,8 @@
       </div>
       <div class="sec-item">
         <span class="si-icon">🔐</span>
-        <span class="si-label">SHA-256</span>
-        <div class="si-desc">Where applicable</div>
+        <span class="si-label">Keychain</span>
+        <div class="si-desc">Secure on-device storage</div>
       </div>
       <div class="sec-item">
         <span class="si-icon">☁️</span>
@@ -559,48 +700,118 @@
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 05 DELETION -->
+  <!-- 08 DELETION -->
   <div class="app-card">
-    <span class="card-label">Section 05</span>
-    <h2>Account Deletion</h2>
-    <p>You can delete your account at any time directly from the <strong>Profile</strong> section inside the app. Your personal information will be removed within a reasonable timeframe, unless retention is required by law.</p>
+    <span class="card-label">Section 08</span>
+    <h2>Account &amp; Data Deletion</h2>
+
+    <h3>Deleting your account in the app</h3>
+    <p>You can start deleting your account directly in the app from <strong>Profile → Delete account</strong>. Confirming this immediately signs you out and sends a deletion request to our team. We then permanently remove your profile (name, avatar colour, connection code, connections), all cards you created, all match and dismissal records linked to you, your authentication account, and the data cached on your device. Deletion is completed within <strong>30 days</strong> and cannot be undone.</p>
+
+    <h3>Automatic deletion</h3>
+    <p>If you do not make any new match for <strong>12 months</strong>, all of your data is automatically deleted and is no longer stored anywhere, unless retention is required by law.</p>
+
+    <h3>Requesting deletion by email</h3>
+    <p>You can also request deletion at any time by contacting the team at <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 06 CHILDREN -->
+  <!-- 09 LEGAL BASIS -->
   <div class="app-card">
-    <span class="card-label">Section 06</span>
-    <h2>Children's Privacy</h2>
-    <p>Deal is not directed toward children under the age of <strong>13</strong>. If we become aware that data from children under 13 has been collected without parental consent, we will take steps to remove it promptly.</p>
+    <span class="card-label">Section 09</span>
+    <h2>Legal Basis for Processing</h2>
+    <p>For users in the European Economic Area (EEA) / UK, we process your data on these legal bases:</p>
+    <ul class="card-list">
+      <li><strong>Performance of a contract</strong> — to create your account and provide the app’s core features.</li>
+      <li><strong>Consent</strong> — for optional sharing you choose, such as sharing your connection code. You can withdraw consent at any time.</li>
+      <li><strong>Legitimate interest</strong> — to keep the service working and secure (e.g. not showing you the same card twice).</li>
+    </ul>
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 07 THIRD-PARTY -->
+  <!-- 10 YOUR RIGHTS -->
   <div class="app-card">
-    <span class="card-label">Section 07</span>
+    <span class="card-label">Section 10</span>
+    <h2>Your Rights</h2>
+    <p>Depending on where you live (e.g. under GDPR or similar laws), you have the right to:</p>
+    <ul class="card-list">
+      <li>Access the personal data we hold about you</li>
+      <li>Correct inaccurate data (you can edit your name, cards, and profile in-app)</li>
+      <li>Delete your data (see Section 08)</li>
+      <li>Receive a copy of your data in a portable format</li>
+      <li>Restrict or object to certain processing</li>
+      <li>Withdraw consent at any time</li>
+      <li>Lodge a complaint with your local data protection authority</li>
+    </ul>
+    <p>To exercise any of these, contact <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 11 RETENTION -->
+  <div class="app-card">
+    <span class="card-label">Section 11</span>
+    <h2>Data Retention</h2>
+    <ul class="card-list">
+      <li>Profile and account data are kept while your account is active.</li>
+      <li>Cards and matches relating to an event are hidden from the app after the event date has passed.</li>
+      <li>If you make no new match for <strong>12 months</strong>, all your data is automatically deleted.</li>
+      <li>You can delete your account earlier from within the app, or by contacting the team — see Section 08.</li>
+    </ul>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 12 INTERNATIONAL TRANSFERS -->
+  <div class="app-card">
+    <span class="card-label">Section 12</span>
+    <h2>International Data Transfers</h2>
+    <p>Deal uses Google Firebase, which may store and process data on servers located outside your country, including outside the EEA. Where required, such transfers rely on appropriate safeguards (e.g. Standard Contractual Clauses). See Google’s privacy documentation for details on Firebase data handling.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 13 THIRD-PARTY -->
+  <div class="app-card">
+    <span class="card-label">Section 13</span>
     <h2>Third-Party Services</h2>
-    <p>Deal relies on third-party infrastructure required for functionality. These providers may process limited technical data needed to operate the app.</p>
+    <p>Deal relies on third-party infrastructure required for functionality. These providers process only the data needed to operate the app. We do not sell your data or share it with advertisers.</p>
     <div class="tag-row">
       <span class="tag purple">Firebase by Google</span>
+      <span class="tag gray">Sign in with Apple</span>
     </div>
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 08 CHANGES -->
+  <!-- 14 CHILDREN -->
   <div class="app-card">
-    <span class="card-label">Section 08</span>
-    <h2>Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. Any changes will be posted within the app or through official communication channels. We encourage you to review this page periodically.</p>
+    <span class="card-label">Section 14</span>
+    <h2>Children’s Privacy</h2>
+    <p>Deal is not directed toward children under the age of <strong>13</strong>. If we become aware that data from children under 13 has been collected without parental consent, we will take steps to remove it promptly.</p>
     <div class="card-author">By IcarusII Developers</div>
   </div>
 
-  <!-- 09 CONTACT -->
+  <!-- 15 CHANGES -->
   <div class="app-card">
-    <span class="card-label">Section 09</span>
+    <span class="card-label">Section 15</span>
+    <h2>Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. Material changes will be posted within the app or through official channels, and the “Last updated” date will change. We encourage you to review this page periodically.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 16 GOVERNING LAW -->
+  <div class="app-card">
+    <span class="card-label">Section 16</span>
+    <h2>Governing Law</h2>
+    <p>This policy is governed by the laws of Italy and applicable European Union data protection law.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="app-card">
+    <span class="card-label">Contact</span>
     <h2>Contact Us</h2>
     <p>Questions or requests regarding this Privacy Policy? Reach out to the IcarusII team:</p>
     <div class="people-grid">
-      <div class="person-chip">Carlo D'Aveni</div>
+      <div class="person-chip">Carlo D’Aveni</div>
       <div class="person-chip">Gianluca Pascarella</div>
       <div class="person-chip">Marco Rocco</div>
       <div class="person-chip">Luigi Viggiano</div>
@@ -616,7 +827,7 @@
   <!-- IT'S A DEAL final -->
   <div class="deal-final">
     <div class="deal-final-inner">
-      <div class="deal-sticker">IT'S A DEAL!</div>
+      <div class="deal-sticker">IT’S A DEAL!</div>
       <p>We keep it simple, honest, and private. Your trust matters to us.</p>
     </div>
   </div>
@@ -624,7 +835,7 @@
 </div>
 
 <footer>
-  <strong>Deal</strong> by IcarusII &nbsp;·&nbsp; Privacy Policy &nbsp;·&nbsp; Last updated May 27, 2026
+  <strong>Deal</strong> by IcarusII &nbsp;·&nbsp; Privacy Policy &nbsp;·&nbsp; Last updated June 5, 2026
 </footer>
 
 <script>
