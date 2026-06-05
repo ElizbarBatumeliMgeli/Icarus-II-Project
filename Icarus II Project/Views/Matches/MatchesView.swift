@@ -5,9 +5,6 @@
 //  Created by Elizbar Kheladze on 25/05/26.
 //
 
-
-
-
 import SwiftUI
 
 struct MatchesView: View {
@@ -44,20 +41,20 @@ struct MatchesView: View {
                     .padding(.top, height * 0.06)
 
                     // Filter / Sort row (optional, left in as requested previously)
-                    HStack(alignment: .center, spacing: width * 0.02) {
-                        Text("Everything")
-                            .font(.system(size: width * 0.045, weight: .medium))
-                            .foregroundStyle(.white)
-                        
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: width * 0.035, weight: .semibold))
-                            .foregroundStyle(.white)
-
-                        Spacer()
-                    }
-                    .padding(.horizontal, horizontal)
-                    .padding(.top, height * 0.045)
-                    .padding(.bottom, height * 0.02)
+//                    HStack(alignment: .center, spacing: width * 0.02) {
+//                        Text("Everything")
+//                            .font(.system(size: width * 0.045, weight: .medium))
+//                            .foregroundStyle(.white)
+//                        
+//                        Image(systemName: "chevron.up.chevron.down")
+//                            .font(.system(size: width * 0.035, weight: .semibold))
+//                            .foregroundStyle(.white)
+//
+//                        Spacer()
+////                    }
+//                    .padding(.horizontal, horizontal)
+//                    .padding(.top, height * 0.045)
+//                    .padding(.bottom, height * 0.02)
 
                     // Main List Area
                     ScrollView {
@@ -96,6 +93,7 @@ struct MatchesView: View {
                             .padding(.bottom, height * 0.04)
                         }
                     }
+                    .padding(.top, height * 0.02)
 
                     Spacer(minLength: 0)
                 }
@@ -117,13 +115,13 @@ struct MatchesView: View {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedCard = nil
                             }
-                            // TODO(OLA): Record a failure/can't-do action for this match.
+                            Task { await viewModel.cancelMatch(card: card) }
                         },
                         onSuccess: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedCard = nil
                             }
-                            // TODO(OLA): Mark this match as completed/success.
+                            Task { await viewModel.completeMatch(card: card) }
                         }
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
@@ -666,7 +664,7 @@ struct BackToFeedButton: View {
             }
             .frame(width: size, height: size)
         }
-        .buttonStyle(PhysicalButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 

@@ -32,7 +32,7 @@ final class AppleAuthManager {
     /// Needed to create the Firebase credential after Apple returns.
     private(set) var currentNonce: String?
 
-    init(repository: AuthRepository = DefaultAuthRepository()) {
+    init(repository: AuthRepository) {
         self.repository = repository
         Task {
             if let cachedProfile = repository.fetchCurrentSessionProfile() {
@@ -42,6 +42,10 @@ final class AppleAuthManager {
                self.authState = .signedOut
             }
         }
+    }
+
+    convenience init() {
+        self.init(repository: DefaultAuthRepository())
     }
 
     // MARK: - Nonce Helper
@@ -95,6 +99,18 @@ final class AppleAuthManager {
                     let profileRepo = ProfileRepository()
                     if let existingUser = try await profileRepo.fetch(id: userID) {
                         logger.info("User \(userID) already exists in Firestore: \(existingUser.displayName)")
+                        
+                        // If we are missing the local profile (e.g. app was deleted and reinstalled), reconstruct it from Firestore.
+                        if self.currentUserProfile == nil {
+                            let reconstructedProfile = AppleUserProfile(
+                                userID: userID,
+                                firstName: existingUser.firstName,
+                                lastName: existingUser.lastName
+                            )
+                            self.currentUserProfile = reconstructedProfile
+                            self.repository.saveSession(profile: reconstructedProfile)
+                            logger.info("Reconstructed local AppleUserProfile from Firestore data.")
+                        }
                     } else {
                         logger.info("User \(userID) not found in Firestore. Creating new profile...")
                         

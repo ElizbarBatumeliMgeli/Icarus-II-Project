@@ -27,7 +27,7 @@ struct ConnectionsView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     // Header Area matching existing navigation structures
                     HStack(alignment: .center) {
-                        GoBackToFeed(size: width * 0.16) {
+                        BackToFeedButton(size: width * 0.12) {
                             dismiss()
                         }
 

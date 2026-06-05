@@ -12,137 +12,157 @@ struct DeckCarousel: View {
     let cardWidth: CGFloat
     let cardHeight: CGFloat
     let sideInset: CGFloat
-    let onEdit: (DeckCard) -> Void
+//    let isDeleteMode: Bool
+//    let onEdit: (DeckCard) -> Void
     let onDelete: (DeckCard) -> Void
     
     // State triggers for our smart shake validation
     @State private var shakeTitleThrows: Int = 0
     @State private var shakeLocationThrows: Int = 0
+    
+    @State private var showLogoutAlert = false
+    @Environment(AppleAuthManager.self) private var authManager
 
     var body: some View {
         GeometryReader { geo in
             let containerWidth = geo.size.width
+            let containerHeight = geo.size.height
             // Mathematically perfect centering
             let horizontalPadding = max(0, (containerWidth - cardWidth) / 2)
 
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: cardWidth * 0.065) {
+            ScrollView (.vertical) {
+                LazyVStack(spacing: cardWidth * 0.065) {
                     
-                    if let draft = viewModel.draftCard {
-                        ZStack(alignment: .topLeading) {
-                            EditableCardView(
-                                card: Binding(
-                                    get: { viewModel.draftCard ?? draft },
-                                    set: { newValue in
-                                        if viewModel.draftCard != nil {
-                                            viewModel.draftCard = newValue
-                                        }
-                                    }
-                                ),
-                                width: cardWidth,
-                                height: cardHeight,
-                                shakeTitleThrows: $shakeTitleThrows,
-                                shakeLocationThrows: $shakeLocationThrows
-                            )
-                            
-                            // SAVE BUTTON
-                            Button {
-                                var isTitleInvalid = false
-                                var isLocInvalid = false
-                                
-                                // 1. Check if the fields are empty or match the placeholders
-                                if let currentDraft = viewModel.draftCard {
-                                    let t = currentDraft.title.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    let l = currentDraft.location.trimmingCharacters(in: .whitespacesAndNewlines)
-                                    
-                                    if t.isEmpty || t == "What are\nwe doing?" || t == "* Required *" {
-                                        isTitleInvalid = true
-                                    }
-                                    if l.isEmpty || l == "Where?" || l == "* Required *" {
-                                        isLocInvalid = true
-                                    }
-                                }
-                                
-                                // 2. Trigger shakes and force empty state for smart placeholders
-                                if isTitleInvalid {
-                                    viewModel.draftCard?.title = ""
-                                    withAnimation(.default) { shakeTitleThrows += 1 }
-                                }
-                                if isLocInvalid {
-                                    viewModel.draftCard?.location = ""
-                                    withAnimation(.default) { shakeLocationThrows += 1 }
-                                }
-                                
-                                // 3. If valid, safely close the draft
-                                if !isTitleInvalid && !isLocInvalid {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                        viewModel.saveDraft()
-                                    }
-                                }
-                            } label: {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: cardWidth * 0.045, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .frame(width: cardWidth * 0.09, height: cardWidth * 0.09)
-                                    .background(Color(hex: "5BBF61"), in: Circle())
-                            }
-                            .buttonStyle(.plain)
-                            .offset(x: cardWidth * 0.93, y: -cardWidth * 0.012)
-
-                            // CANCEL BUTTON
-                            Button {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    viewModel.cancelDraft()
-                                }
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: cardWidth * 0.045, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .frame(width: cardWidth * 0.07, height: cardWidth * 0.07)
-                                    .background(Color(hex: "EE5C5C"), in: Circle())
-                            }
-                            .buttonStyle(.plain)
-                            .offset(x: -cardWidth * 0.02, y: -cardWidth * 0.012)
-                        }
-                        .transition(.scale.combined(with: .opacity))
-                    }
+//                    if let draft = viewModel.draftCard {
+//                        ZStack(alignment: .topLeading) {
+//                            EditableCardView(
+//                                card: Binding(
+//                                    get: { viewModel.draftCard ?? draft },
+//                                    set: { newValue in
+//                                        if viewModel.draftCard != nil {
+//                                            viewModel.draftCard = newValue
+//                                        }
+//                                    }
+//                                ),
+//                                width: cardWidth,
+//                                height: cardHeight,
+//                                shakeTitleThrows: $shakeTitleThrows,
+//                                shakeLocationThrows: $shakeLocationThrows
+//                            )
+//                            
+//                            // SAVE BUTTON
+//                            Button {
+//                                var isTitleInvalid = false
+//                                var isLocInvalid = false
+//                                
+//                                // 1. Check if the fields are empty or match the placeholders
+//                                if let currentDraft = viewModel.draftCard {
+//                                    let t = currentDraft.title.trimmingCharacters(in: .whitespacesAndNewlines)
+//                                    let l = currentDraft.location.trimmingCharacters(in: .whitespacesAndNewlines)
+//                                    
+//                                    if t.isEmpty || t == "What are\nwe doing?" || t == "* Required *" {
+//                                        isTitleInvalid = true
+//                                    }
+//                                    if l.isEmpty || l == "Where?" || l == "* Required *" {
+//                                        isLocInvalid = true
+//                                    }
+//                                }
+//                                
+//                                // 2. Trigger shakes and force empty state for smart placeholders
+//                                if isTitleInvalid {
+//                                    viewModel.draftCard?.title = ""
+//                                    withAnimation(.default) { shakeTitleThrows += 1 }
+//                                }
+//                                if isLocInvalid {
+//                                    viewModel.draftCard?.location = ""
+//                                    withAnimation(.default) { shakeLocationThrows += 1 }
+//                                }
+//                                
+//                                // 3. If valid, safely close the draft
+//                                if !isTitleInvalid && !isLocInvalid {
+//                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+//                                        viewModel.saveDraft()
+//                                    }
+//                                }
+//                            } label: {
+//                                Image(systemName: "checkmark")
+//                                    .font(.system(size: cardWidth * 0.045, weight: .bold))
+//                                    .foregroundStyle(.white)
+//                                    .frame(width: cardWidth * 0.09, height: cardWidth * 0.09)
+//                                    .background(Color(hex: "5BBF61"), in: Circle())
+//                            }
+//                            .buttonStyle(.plain)
+//                            .offset(x: cardWidth * 0.93, y: -cardWidth * 0.012)
+//
+//                            // CANCEL BUTTON
+//                            Button {
+//                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+//                                    viewModel.cancelDraft()
+//                                }
+//                            } label: {
+//                                Image(systemName: "xmark")
+//                                    .font(.system(size: cardWidth * 0.045, weight: .bold))
+//                                    .foregroundStyle(.white)
+//                                    .frame(width: cardWidth * 0.07, height: cardWidth * 0.07)
+//                                    .background(Color(hex: "EE5C5C"), in: Circle())
+//                            }
+//                            .buttonStyle(.plain)
+//                            .offset(x: -cardWidth * 0.02, y: -cardWidth * 0.012)
+//                        }
+//                        .transition(.scale.combined(with: .opacity))
+//                    }
 
                     ForEach(viewModel.cards) { card in
-                        ZStack(alignment: .topLeading) {
+                        SwipeToDeleteWrapper(cardWidth: cardWidth, action: {
+                            onDelete(card)
+                        }) {
                             CarouselCardView(
                                 card: card,
                                 width: cardWidth,
                                 height: cardHeight
                             )
-                            .onTapGesture {
-                                onEdit(card)
-                            }
-
-                            Button {
-                                onDelete(card)
-                            } label: {
-                                Image(systemName: "minus")
-                                    .font(.system(size: cardWidth * 0.045, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .frame(width: cardWidth * 0.07, height: cardWidth * 0.07)
-                                    .background(.black, in: Circle())
-                            }
-                            .buttonStyle(.plain)
-                            .offset(x: -cardWidth * 0.02, y: -cardWidth * 0.012)
                         }
                     }
+                    
+                    // Logout Picker Menu
+                    Menu {
+                        Button("Log Out", role: .destructive) {
+                            showLogoutAlert = true
+                        }
+//                        Button("Delete Account", role: .destructive) {
+//                            // TODO: Eliminate account logic
+//                            print("Delete account tapped")
+//                        }
+                    } label: {
+                        Text("Logout")
+                            .font(.system(size: containerWidth * 0.040, weight: .semibold))
+                            .foregroundStyle(.red)
+                            .padding(.horizontal, containerWidth * 0.04)
+                            .frame(height: containerHeight * 0.055)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(Color(hex: "D3D3D3"))
+                            )
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, cardHeight * 0.05)
                 }
                 .scrollTargetLayout()
                 .padding(.horizontal, horizontalPadding)
-                // THE FIX: Provide just enough padding to protect the drop shadows and bounce.
-                .padding(.top, cardHeight * 0.05)
-                .padding(.bottom, cardHeight * 0.15)
             }
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
-            .scrollClipDisabled()
-            .frame(height: cardHeight * 1.2)
-            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.draftCard != nil)
+            .frame(maxHeight: .infinity)
+        }
+        .alert("Log Out", isPresented: $showLogoutAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Log Out", role: .destructive) {
+                Task {
+                    await authManager.logout()
+                }
+            }
+        } message: {
+            Text("Are you sure you want to log out?")
         }
     }
 }
@@ -150,25 +170,15 @@ struct DeckCarousel: View {
 struct CarouselCardView: View {
     let card: DeckCard
     let width: CGFloat
-    let height: CGFloat
-
-    @State private var idleOffsetY: CGFloat = 0
-    @State private var idleRotation: Double = 0
-    @State private var idleScale: CGFloat = 1
+    let height: CGFloat 
 
     var body: some View {
-        let cardRadius = width * 0.08
+        let sw = width / 0.82
+        let cardRadius = sw * 0.06
+        let innerCorner = sw * 0.045
         let borderColor = card.color == Color(hex: "111111") ? Color(hex: "3478F6") : card.color
 
         ZStack {
-            // Glowing shadow
-            RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
-                .fill(card.color)
-                .frame(width: width * 0.96, height: height * 0.9)
-                .blur(radius: width * 0.1)
-                .blendMode(.plusLighter)
-                .allowsHitTesting(false)
-
             // Card Base
             RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
                 .fill(
@@ -182,8 +192,6 @@ struct CarouselCardView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: card.color.opacity(0.5), radius: width * 0.1, x: 0, y: width * 0.02)
-                .shadow(color: .black.opacity(0.24), radius: width * 0.025, x: 0, y: width * 0.012)
 
             // Texture/Pattern
             RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
@@ -198,160 +206,146 @@ struct CarouselCardView: View {
                 .blendMode(.multiply)
                 .allowsHitTesting(false)
 
-            // Highlight gradient
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(0.2),
-                    Color.clear,
-                    card.color.opacity(0.08)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
-            .allowsHitTesting(false)
+            // Border
+            RoundedRectangle(cornerRadius: innerCorner, style: .continuous)
+                .stroke(borderColor, lineWidth: sw * 0.025)
+                .padding(sw * 0.02)
 
-            // Borders
-            ZStack {
-                RoundedRectangle(cornerRadius: width * 0.07, style: .continuous)
-                    .stroke(card.color.opacity(0.95), lineWidth: width * 0.030)
-                    .padding(width * 0.035)
-
-                RoundedRectangle(cornerRadius: width * 0.07, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.38),
-                                card.color.opacity(0.85),
-                                card.color.opacity(0.55),
-                                Color.black.opacity(0.16)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: width * 0.011
-                    )
-                    .padding(width * 0.041)
-
-                RoundedRectangle(cornerRadius: width * 0.07, style: .continuous)
-                    .stroke(Color.white.opacity(0.28), lineWidth: 1)
-                    .padding(width * 0.049)
-
-                RoundedRectangle(cornerRadius: width * 0.07, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                    .blur(radius: 0.7)
-                    .padding(width * 0.031)
-            }
-
-            // Content
-            VStack(spacing: 0) {
-                // Top: author (left) + category pill (right)
-                HStack(alignment: .center, spacing: width * 0.02) {
-                    HStack(spacing: width * 0.02) {
-                        Circle()
-                            .fill(Color(hex: "BBE4C6"))
-                            .frame(width: width * 0.06, height: width * 0.06)
-                            .overlay(Circle().stroke(Color.black.opacity(0.1), lineWidth: 1))
-                        Text(card.ownerName.replacingOccurrences(of: "\n", with: " "))
-                            .font(.system(size: width * 0.038, weight: .medium))
-                            .foregroundStyle(.black.opacity(0.75))
-                            .lineLimit(1)
-                    }
+            VStack(alignment: .leading, spacing: sw * 0.04) {
+                // Category pill
+                HStack(alignment: .bottom) {
                     Spacer()
-                    categoryPill(card.category, color: borderColor)
+                    categoryPill(card.category, color: borderColor, sw: sw)
                 }
-                .padding(.top, height * 0.055)
+                
+                // Title section
+                Text(card.title.replacingOccurrences(of: "\n", with: " "))
+                    .font(.custom("Nohemi-Medium", fixedSize: sw * 0.08))
+                    .foregroundStyle(.black.opacity(0.82))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
 
-                Spacer()
-
-                // Centre: title + date/location pills
-                VStack(spacing: height * 0.025) {
-                    Text(card.title)
-                        .font(.custom("Nohemi-Medium", fixedSize: 40))
-                        .foregroundStyle(.black.opacity(0.82))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.72)
-
-                    HStack(spacing: width * 0.01) {
-                        infoPill(text: card.dateText, icon: "calendar")
-                        infoPill(text: card.location, icon: "paperplane")
-                    }
+                // Date and location info
+                HStack(spacing: sw * 0.04) {
+                    rowInfo(text: card.dateText, icon: "calendar", sw: sw)
+                    rowInfo(text: card.location, icon: "paperplane", sw: sw)
                 }
-                .padding(.bottom, height * 0.06)
-
+                
                 Spacer()
-
-                // Bottom: participants
-                participantsGroup()
-                    .padding(.bottom, height * 0.055)
+                
             }
-            .padding(.horizontal, width * 0.09)
+            .padding(.horizontal, sw * 0.08)
+            .padding(.top, sw * 0.07)
+            .padding(.bottom, sw * 0.06)
         }
-        .frame(width: width, height: height)
+        .frame(minHeight: sw * 0.55) // Forces the background to be 50% taller overall
+        .shadow(color: .black.opacity(0.2), radius: sw * 0.02, x: 0, y: sw * 0.01)
         .compositingGroup()
-        .offset(y: idleOffsetY)
-        .rotationEffect(.degrees(idleRotation))
-        .scaleEffect(idleScale)
-        .onAppear { startIdle() }
-        .onDisappear {
-            // Optionally reset states to zero to prevent visual jumps
-            // when popping back
-            idleOffsetY = 0
-            idleRotation = 0
-            idleScale = 1
-        }
     }
 
-    private func categoryPill(_ text: String, color: Color) -> some View {
+    private func rowInfo(text: String, icon: String, sw: CGFloat) -> some View {
+        HStack(spacing: sw * 0.015) {
+            Image(systemName: icon)
+                .font(.system(size: sw * 0.045, weight: .semibold))
+            Text(text.isEmpty ? "—" : text)
+                .font(.system(size: sw * 0.045, weight: .semibold))
+        }
+        .foregroundStyle(.black.opacity(0.8))
+    }
+
+    private func categoryPill(_ text: String, color: Color, sw: CGFloat) -> some View {
         Text(text.isEmpty ? "Category" : text)
-            .font(.system(size: width * 0.035, weight: .semibold))
+            .font(.system(size: sw * 0.035, weight: .semibold))
             .foregroundStyle(.white)
-            .padding(.horizontal, width * 0.04)
-            .frame(height: height * 0.055)
+            .padding(.horizontal, sw * 0.04)
+            .padding(.vertical, sw * 0.02)
             .background(
                 Capsule(style: .continuous)
                     .fill(color)
             )
     }
+}
 
-    private func infoPill(text: String, icon: String) -> some View {
-        HStack(spacing: width * 0.01) {
-            Image(systemName: icon)
-                .font(.system(size: width * 0.05, weight: .semibold))
-            Text(text.isEmpty ? "—" : text)
-                .font(.system(size: width * 0.05, weight: .semibold))
-        }
-        .foregroundStyle(.black)
-        .padding(.horizontal, width * 0.01)
-        .frame(height: height * 0.057)
-    }
-
-    private func participantsGroup() -> some View {
-        VStack(alignment: .center, spacing: width * 0.02) {
-            HStack(spacing: -width * 0.06) {
-                ForEach(0..<3, id: \.self) { _ in
-                    Circle()
-                        .fill(Color(hex: "D8D8D8"))
-                        .frame(width: width * 0.12, height: width * 0.12)
-                        .overlay(Circle().stroke(.black, lineWidth: 1.5))
-                }
+struct SwipeToDeleteWrapper<Content: View>: View {
+    let cardWidth: CGFloat
+    let action: () -> Void
+    @ViewBuilder let content: Content
+    
+    @State private var offset: CGFloat = 0
+    @State private var previousOffset: CGFloat = 0
+    @State private var isDeleted: Bool = false
+    
+    var body: some View {
+        if !isDeleted {
+            let sw = cardWidth / 0.82
+            let cardRadius = sw * 0.06
+            let buttonWidth = sw * 0.25
+            
+            ZStack(alignment: .trailing) {
+                // Background Trash Area
+                RoundedRectangle(cornerRadius: cardRadius, style: .continuous)
+                    .fill(Color(hex: "EE5C5C"))
+                    .onTapGesture {
+                        if offset == -buttonWidth {
+                            deleteCard()
+                        }
+                    }
+                
+                Image(systemName: "trash")
+                    .font(.system(size: sw * 0.07, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.trailing, sw * 0.08)
+                    .opacity(offset < -sw * 0.1 ? 1 : 0)
+                    .scaleEffect(offset < -sw * 0.25 ? 1.1 : 1.0)
+                    .animation(.spring(), value: offset)
+                    .onTapGesture {
+                        if offset == -buttonWidth {
+                            deleteCard()
+                        }
+                    }
+                
+                content
+                    .offset(x: offset)
+                    .gesture(
+                        DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                            .onChanged { gesture in
+                                let totalTranslation = gesture.translation.width + previousOffset
+                                if totalTranslation < 0 { // Only allow swiping left
+                                    offset = totalTranslation
+                                } else {
+                                    offset = 0
+                                }
+                            }
+                            .onEnded { gesture in
+                                if offset < -cardWidth * 0.4 {
+                                    // Trigger auto delete
+                                    deleteCard()
+                                } else if offset < -buttonWidth * 0.5 {
+                                    // Snap to button open state
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                        offset = -buttonWidth
+                                        previousOffset = offset
+                                    }
+                                } else {
+                                    // Snap back
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                        offset = 0
+                                        previousOffset = 0
+                                    }
+                                }
+                            }
+                    )
             }
-            Text("Other participants")
-                .font(.system(size: width * 0.03, weight: .medium))
-                .foregroundStyle(.black.opacity(0.6))
         }
     }
-
-    private func startIdle() {
-        withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
-            idleOffsetY = -height * 0.03
+    
+    private func deleteCard() {
+        withAnimation(.easeOut(duration: 0.3)) {
+            offset = -cardWidth * 1.5 // Swipe it completely off screen
         }
-        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-            idleRotation = 1.7
-        }
-        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-            idleScale = 1.015
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            isDeleted = true
+            action()
         }
     }
 }

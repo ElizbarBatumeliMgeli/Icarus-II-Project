@@ -300,6 +300,50 @@ final class DeckViewModel {
         
     }
 
+    // MARK: - Matches UI Actions
+
+    // EL - Cancel a match (I can't button). Removes the match from Firestore.
+    // If you are the owner, this removes all matches for this card (cancels the event).
+    // If you are the matcher, this removes your specific match.
+    func cancelMatch(card: DeckCard) async {
+        matchedCardInfos.removeAll { $0.card.id == card.id }
+        
+        do {
+            if card.ownerID == currentOwnerID {
+                let matches = try await matchRepository.forCard(card.id.uuidString)
+                for match in matches {
+                    try await matchRepository.delete(id: match.id)
+                }
+            } else {
+                let matchID = Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID)
+                try await matchRepository.delete(id: matchID)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // EL - Complete a match (I did it button). Marks the match as completed.
+    func completeMatch(card: DeckCard) async {
+        matchedCardInfos.removeAll { $0.card.id == card.id }
+        
+        do {
+            if card.ownerID == currentOwnerID {
+                let matches = try await matchRepository.forCard(card.id.uuidString)
+                for var match in matches where match.status == .accepted {
+                    match.status = .completed
+                    try await matchRepository.create(match)
+                }
+            } else {
+                let matchID = Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID)
+                let myMatch = Match(id: matchID, cardID: card.id.uuidString, ownerID: card.ownerID, matcherID: currentOwnerID, status: .completed)
+                try await matchRepository.create(myMatch)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - Matched cards (for MatchesView)
 
     // EL - Loads the cards I've matched with into `matchedCards` (reads my matches, then fetches those cards); call this when MatchesView appears.

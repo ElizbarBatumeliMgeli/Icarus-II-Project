@@ -14,6 +14,7 @@ struct Match: Identifiable, Codable, Hashable, Sendable {
         case pending
         case accepted
         case blocked
+        case completed
     }
 
     let id: String
