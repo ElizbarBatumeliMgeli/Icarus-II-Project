@@ -10,7 +10,7 @@ struct ProfileDeckView: View {
     let onClose: () -> Void
     let openConnections: () -> Void
     
-    @State private var isDeckEditing: Bool = false
+    @State private var showCreationModal: Bool = false
     
     @Environment(UserViewModel.self) var userViewModel
 
@@ -21,8 +21,8 @@ struct ProfileDeckView: View {
             let side = width * 0.095
             let icon = width * 0.12
             let avatar = width * 0.24
-            let cardWidth = width * 0.72
-            let cardHeight = height * 0.61
+            let cardWidth = width * 0.82 // 10% wider than before
+            let cardHeight = height * 0.53
             let confettiHeight = height * 0.385
 
             ZStack {
@@ -36,74 +36,50 @@ struct ProfileDeckView: View {
 
                     Spacer()
                 }
-                .opacity(isDeckEditing ? 0 : 1)
-                .animation(.easeInOut(duration: 0.3), value: isDeckEditing)
 
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .trailing, spacing: 0) {
                     
                     Spacer(minLength: height * 0.06)
-                    
-                    HStack(alignment: .top) {
-                        
-                        if isDeckEditing {
-                            Button("Done") {
-                                withAnimation(.spring(response: 0.45, dampingFraction: 0.9)) {
-                                    isDeckEditing = false
-                                }
-                            }
-                            .font(.system(size: width * 0.055, weight: .semibold))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, width * 0.04)
-                            .frame(height: icon)
-                            .background(.white.opacity(0.96), in: Capsule())
-                            .glassEffect(.regular, in: Capsule())
-                            .buttonStyle(.plain)
-                        }
-                        
-                        Spacer()
-                        
+                   
                         BackToFeedFromProfile(size: icon){
                             onClose()
                         }
-                    }
                     .padding(.top, height * 0.022)
 
-                    if !isDeckEditing {
                         VStack(spacing: height * 0.018) {
                             ZStack {
                                 Circle()
                                     .fill(userViewModel.user?.avatarColor ?? Color(hex: "D3D3D3"))
-                                    .frame(width: avatar * 1.45, height: avatar * 1.45)
+                                    .frame(width: avatar * 1.35, height: avatar * 1.35)
                                     .shadow(color: .black.opacity(0.08), radius: width * 0.04, x: 0, y: width * 0.02)
                                     .glassEffect(.regular, in: Circle())
 
                                 // Default avatar: first letter of the signed-in user's name.
                                 Text(userViewModel.user?.initial ?? "")
-                                    .font(.custom("Nohemi-Medium", fixedSize: avatar * 0.62))
+                                    .font(.custom("Nohemi-Medium", fixedSize: avatar * 0.50))
                                     .foregroundStyle(.white)
                             }
 
                             Text(userViewModel.user?.displayName ?? "")
-                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.085))
+                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.080))
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.75)
+                                .minimumScaleFactor(0.45)
 
-                            HStack(spacing: width * 0.04) {
+                            HStack(spacing: width * 0.001) {
                                 Button {
                                     openConnections()
                                 } label: {
                                     Text("Connections")
-                                        .font(.system(size: width * 0.045, weight: .semibold))
+                                        .font(.system(size: width * 0.040, weight: .semibold))
                                         .foregroundStyle(.black)
-                                        .padding(.horizontal, width * 0.06)
-                                        .frame(height: height * 0.052)
+                                        .padding(.horizontal, width * 0.04)
+                                        .frame(height: height * 0.045)
                                         .background(
                                             Capsule(style: .continuous)
                                                 .fill(Color(hex: "D3D3D3"))
                                         )
                                 }
-                                .buttonStyle(.plain)
 
                                 // Share a permanent, individual invite link (icarus://connect?code=…).
                                 // The link embeds the user's permanent connectionCode, so it never expires.
@@ -114,56 +90,62 @@ struct ProfileDeckView: View {
                                         subject: Text("Connect with me on DEAL!"),
                                         message: Text("Tap to connect with me on DEAL — or enter my code: \(code)")
                                     ) {
-                                        CircleIconLabel(systemName: "square.and.arrow.up", size: icon)
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.system(size: width * 0.045, weight: .semibold))
+                                            .foregroundStyle(.black)
+                                            .padding(.horizontal, width * 0.06)
+                                            .frame(height: height * 0.052)
+                                            .background(
+                                                Circle()
+                                                    .fill(Color(hex: "D3D3D3"))
+                                            )
                                     }
-                                    .buttonStyle(.plain)
-                                } else {
-                                    // Until the signed-in profile loads, show the icon inert.
-                                    CircleIconButton(systemName: "square.and.arrow.up", size: icon)
                                 }
                             }
                             .buttonStyle(.plain)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.top, height * 0.01)
                         .transition(.move(edge: .top).combined(with: .opacity))
-                    }
+                    
 
-                    if !isDeckEditing {
                         // White Vector Line
                         Rectangle()
                             .fill(Color.white.opacity(1))
                             .frame(height: 1)
-                            .padding(.top, height * 0.019)
+                            .padding(.top, height * 0.015)
                             .transition(.opacity)
-                    }
+                    
 
-                    if !isDeckEditing {
-                        // Deck Header (Pencil moved back to the right)
                         HStack(alignment: .center) {
-                            Text("Your deck")
+                            Text("Your Deck")
                                 .font(.custom("Nohemi-Medium", fixedSize: width * 0.074))
                                 .foregroundStyle(.white)
+                                
+                            Text("\(viewModel.cards.count)/10")
+                                .font(.custom("Nohemi-Medium", fixedSize: width * 0.055))
+                                .foregroundStyle(.white)
+                                .padding(.leading, width * 0.02)
 
                             Spacer()
 
                             Button {
-                                withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
-                                    isDeckEditing = true
-                                }
+                                showCreationModal = true
                             } label: {
-                                Image(systemName: "pencil")
-                                    .font(.system(size: width * 0.045, weight: .bold))
-                                    .foregroundStyle(Color(hex: "151515"))
-                                    .frame(width: width * 0.074, height: width * 0.074)
-                                    .background(.white.opacity(0.94), in: Circle())
-                                    .glassEffect(.regular, in: Circle())
+                                Image(systemName: "plus")
+                                    .font(.system(size: width * 0.045, weight: .semibold))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, width * 0.06)
+                                    .frame(height: height * 0.052)
+                                    .background(
+                                        Circle()
+                                            .fill(Color(hex: "D3D3D3"))
+                                    )
                             }
                             .buttonStyle(.plain)
                         }
                         .padding(.top, height * 0.012)
                         .transition(.move(edge: .top).combined(with: .opacity))
-                    }
+                    
 
                     ZStack(alignment: .bottom) {
                         Group {
@@ -175,66 +157,12 @@ struct ProfileDeckView: View {
                                         .font(.system(size: width * 0.16))
                                         .foregroundStyle(.white)
                                     
-                                    Text("You have no cards.\nTap to create one!")
+                                    Text("You have no cards.\nTap the + to create one!")
                                         .font(.custom("Nohemi-Medium", fixedSize: width * 0.055))
                                         .foregroundStyle(.white)
                                         .multilineTextAlignment(.center)
                                         .lineLimit(2)
                                         .minimumScaleFactor(0.5)
-                                    
-                                    Button {
-                                        withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
-                                            isDeckEditing = true
-                                            viewModel.addCard()
-                                        }
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color(hex: "080808"))
-                                                .shadow(color: .black.opacity(0.4), radius: icon * 0.1, x: 0, y: icon * 0.05)
-                                                .shadow(color: .white, radius: icon * 0.1)
-
-                                            Circle()
-                                                .stroke(
-                                                    LinearGradient(
-                                                        colors: [.white.opacity(0.15), .clear, .black.opacity(0.8)],
-                                                        startPoint: .topLeading,
-                                                        endPoint: .bottomTrailing
-                                                    ),
-                                                    lineWidth: 1
-                                                )
-
-                                            Image(systemName: "plus")
-                                                .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                                .foregroundStyle(
-                                                    LinearGradient(
-                                                        colors: [Color(hex: "C9EC5C"), Color(hex: "5BBF61")],
-                                                        startPoint: .top,
-                                                        endPoint: .bottom
-                                                    )
-                                                )
-                                                .shadow(color: Color(hex: "5BBF61").opacity(0.4), radius: 8, x: 0, y: 0)
-                                                .overlay(
-                                                    Image(systemName: "plus")
-                                                        .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                                        .foregroundStyle(.clear)
-                                                        .overlay(
-                                                            LinearGradient(
-                                                                colors: [.white.opacity(0.6), .clear],
-                                                                startPoint: .top,
-                                                                endPoint: .bottom
-                                                            )
-                                                            .mask(
-                                                                Image(systemName: "plus")
-                                                                    .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                                            )
-                                                        )
-                                                )
-                                        }
-                                        .frame(width: icon * 1.25, height: icon * 1.25)
-                                    }
-                                    .buttonStyle(PhysicalButtonStyle())
-                                    .padding(.top, height * 0.02)
                                     
                                     Spacer(minLength: 0)
                                 }
@@ -244,111 +172,34 @@ struct ProfileDeckView: View {
                                 
                             } else {
                                 // POPULATED STATE
-                                if isDeckEditing {
-                                    VStack {
-                                        Spacer(minLength: 0)
-                                        DeckCarousel(
-                                            viewModel: viewModel,
-                                            cardWidth: cardWidth,
-                                            cardHeight: cardHeight,
-                                            sideInset: 0,
-                                            onEdit: { viewModel.editCard($0) },
-                                            onDelete: { viewModel.delete($0) }
-                                        )
-                                        .padding(.top, height * 0.07)
-                                        Spacer(minLength: 0)
+                                DeckCarousel(
+                                    viewModel: viewModel,
+                                    cardWidth: cardWidth,
+                                    cardHeight: cardHeight,
+                                    sideInset: side,
+                                    onDelete: { card in
+                                        viewModel.delete(card)
                                     }
-                                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                                } else {
-                                    DeckCarousel(
-                                        viewModel: viewModel,
-                                        cardWidth: cardWidth,
-                                        cardHeight: cardHeight,
-                                        sideInset: side,
-                                        onEdit: { viewModel.editCard($0) },
-                                        onDelete: { card in
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                                viewModel.delete(card)
-                                            }
-                                        }
-                                    )
-                                    .ignoresSafeArea(edges: .horizontal)
-                                }
+                                )
+                                .ignoresSafeArea(edges: .horizontal)
                             }
-                        }
-
-                        // Floating bottom plus button
-                        if isDeckEditing && !(viewModel.cards.isEmpty && viewModel.draftCard == nil) {
-                            HStack {
-                                Spacer()
-                                Button {
-                                    viewModel.addCard()
-                                } label: {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color(hex: "080808"))
-                                            .shadow(color: .black.opacity(0.4), radius: icon * 0.1, x: 0, y: icon * 0.05)
-                                            .shadow(color: .white, radius: icon * 0.1)
-
-                                        Circle()
-                                            .stroke(
-                                                LinearGradient(
-                                                    colors: [.white.opacity(0.15), .clear, .black.opacity(0.8)],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                ),
-                                                lineWidth: 1
-                                            )
-
-                                        Image(systemName: "plus")
-                                            .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                            .foregroundStyle(
-                                                LinearGradient(
-                                                    colors: [Color(hex: "C9EC5C"), Color(hex: "5BBF61")],
-                                                    startPoint: .top,
-                                                    endPoint: .bottom
-                                                )
-                                            )
-                                            .shadow(color: Color(hex: "5BBF61").opacity(0.4), radius: 8, x: 0, y: 0)
-                                            .overlay(
-                                                Image(systemName: "plus")
-                                                    .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                                    .foregroundStyle(.clear)
-                                                    .overlay(
-                                                        LinearGradient(
-                                                            colors: [.white.opacity(0.6), .clear],
-                                                            startPoint: .top,
-                                                            endPoint: .bottom
-                                                        )
-                                                        .mask(
-                                                            Image(systemName: "plus")
-                                                                .font(.system(size: icon * 0.45, weight: .black, design: .rounded))
-                                                        )
-                                                    )
-                                            )
-                                    }
-                                    .frame(width: icon * 1.25, height: icon * 1.25)
-                                }
-                                .buttonStyle(PhysicalButtonStyle())
-                                Spacer()
-                            }
-                            .padding(.bottom, height * 0.06)
-                            .ignoresSafeArea(edges: .horizontal)
-                            .transition(.scale.combined(with: .opacity))
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.horizontal, -side)
+                    .padding(.top, height * 0.015)
                     .ignoresSafeArea(edges: .horizontal)
                     .contentShape(Rectangle())
-                    .animation(.spring(response: 0.5, dampingFraction: 0.9), value: isDeckEditing)
-
-                    Spacer(minLength: 0)
                 }
-                .ignoresSafeArea(edges: [.top, .bottom]) // FIX: Allow bleeding into the top and bottom safe areas!
+                .ignoresSafeArea(edges: .top) // FIX: Only bleed into the top so logout button is not overlapped
                 .padding(.horizontal, side)
             }
             // THE FIX: Removed the restrictive `.clipped()` here entirely!
+            .fullScreenCover(isPresented: $showCreationModal) {
+                CardCreationModalView(isPresented: $showCreationModal, ownerName: userViewModel.user?.name ?? "") { newCard in
+                    viewModel.save(card: newCard)
+                }
+            }
             .sheet(isPresented: $viewModel.isEditorPresented) {
                 CardEditorSheet(
                     card: viewModel.selectedCard,

@@ -14,37 +14,43 @@ struct SignInView: View {
     @Environment(AppleAuthManager.self) var authManager
 
     var body: some View {
-        VStack(spacing: 30) {
-            VStack(spacing: 16) {
-                Image(systemName: "applelogo")
-                    .font(.system(size: 60))
-
-                Text("Create Account")
-                    .font(.title.bold())
-
-                Text("Your name will be securely captured on the first attempt.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+        ZStack {
+            DottedBackground()
+            VStack(spacing: 30) {
+                VStack(spacing: 16) {
+                    Image(systemName: "applelogo")
+                        .font(.system(size: 60))
+                        .foregroundStyle(Color.white)
+                    
+                    Text("Create Account")
+                        .font(.title.bold())
+                        .foregroundStyle(Color.white)
+                    
+                    Text("Your name will be securely captured on the first attempt.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .padding(.bottom, 40)
+                
+                if let errorMessage = authManager.errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                }
+                
+                SignInWithAppleButton(.continue) { request in
+                    request.requestedScopes = [.fullName, .email]
+                    request.nonce = authManager.prepareNonce()
+                } onCompletion: { result in
+                    authManager.handleAuthorization(result: result)
+                }
+                .signInWithAppleButtonStyle(.white)
+                .frame(height: 50)
+                .padding(.horizontal, 32)
             }
-            .padding(.bottom, 40)
-
-            if let errorMessage = authManager.errorMessage {
-                Text(errorMessage)
-                    .foregroundStyle(.red)
-                    .font(.footnote)
-            }
-
-            SignInWithAppleButton(.continue) { request in
-                request.requestedScopes = [.fullName, .email]
-                request.nonce = authManager.prepareNonce()
-            } onCompletion: { result in
-                authManager.handleAuthorization(result: result)
-            }
-            .signInWithAppleButtonStyle(.white)
-            .frame(height: 50)
-            .padding(.horizontal, 32)
         }
     }
 }

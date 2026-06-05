@@ -110,11 +110,12 @@ struct MainFeedView: View {
                                     viewModel.dismiss(card) // left = dismiss (local only)
                                 }
                             }
+                            
                             Spacer()
 
-                            PhysicalShuffle(size: iconSize * 0.9) {
-                                viewModel.shuffle()
-                            }
+//                            PhysicalShuffle(size: iconSize * 0.9) {
+//                                viewModel.shuffle()
+//                            }
                             
                             Spacer()
 
@@ -226,6 +227,7 @@ struct PhysicalXButton: View {
                 Circle()
                     .fill(Color(hex: "080808"))
                     .shadow(color: .gray.opacity(0.4), radius: size * 0.1, x: 0, y: size * 0.05)
+                    .shadow(color: .white,radius: size * 0.1)
                 
                 Circle()
                     .stroke(

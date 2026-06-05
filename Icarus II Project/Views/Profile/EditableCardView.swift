@@ -27,6 +27,7 @@ struct EditableCardView: View {
     
     // 2. Bindings to receive the shake triggers from the save button
     @Binding var shakeTitleThrows: Int
+    @Binding var shakeCategoryThrows: Int
     @Binding var shakeLocationThrows: Int
     
     let categories = ["Food", "Social", "Art", "Fun", "Travel"]
@@ -128,18 +129,8 @@ struct EditableCardView: View {
 
             // Content
             VStack(spacing: 0) {
-                // Top: author (left) + editable category pill (right)
+                // Top: editable category pill (right)
                 HStack(alignment: .center, spacing: width * 0.02) {
-                    HStack(spacing: width * 0.02) {
-                        Circle()
-                            .fill(Color(hex: "BBE4C6"))
-                            .frame(width: width * 0.06, height: width * 0.06)
-                            .overlay(Circle().stroke(Color.black.opacity(0.1), lineWidth: 1))
-                        Text(card.ownerName.replacingOccurrences(of: "\n", with: " "))
-                            .font(.system(size: width * 0.038, weight: .medium))
-                            .foregroundStyle(.black.opacity(0.75))
-                            .lineLimit(1)
-                    }
                     Spacer()
                     Menu {
                         ForEach(categories, id: \.self) { cat in
@@ -148,8 +139,9 @@ struct EditableCardView: View {
                             }
                         }
                     } label: {
-                        categoryPill(card.category.isEmpty ? "Category" : card.category, color: borderColor)
+                        categoryPill(card.category.isEmpty ? "add a category" : card.category, color: card.category.isEmpty ? Color(hex: "000000") : borderColor)
                     }
+                    .modifier(Shake(animatableData: CGFloat(shakeCategoryThrows)))
                 }
                 .padding(.top, height * 0.055)
 
@@ -184,8 +176,8 @@ struct EditableCardView: View {
                 Spacer()
 
                 // Bottom: participants
-                participantsGroup()
-                    .padding(.bottom, height * 0.055)
+//                participantsGroup()
+//                    .padding(.bottom, height * 0.055)
             }
             .padding(.horizontal, width * 0.09)
         }
