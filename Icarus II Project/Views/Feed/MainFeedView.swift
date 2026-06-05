@@ -11,7 +11,10 @@ struct MainFeedView: View {
     @Bindable var viewModel: DeckViewModel
     let openProfile: () -> Void
     let openMatches: () -> Void
-    
+
+    // Used to refresh the feed when the app returns to the foreground.
+    @Environment(\.scenePhase) private var scenePhase
+
     // Controls the pop-up stamp animation
     @State private var showDealStamp = false
 
@@ -148,8 +151,14 @@ struct MainFeedView: View {
         .task {
             await viewModel.reloadFeed()
         }
-        .refreshable {
-            await viewModel.reloadFeed()
+        // (Pull-to-refresh removed: .refreshable needs a scrollable container, and the
+        //  feed is a fixed card stack, so the gesture never fired. Foreground refresh below.)
+        // Auto-refresh when returning to the app, so connections' new cards show up
+        // without needing to quit and relaunch.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await viewModel.reloadFeed() }
+            }
         }
         .onChange(of: viewModel.user.connections) { _ in
             Task { await viewModel.reloadFeed() }

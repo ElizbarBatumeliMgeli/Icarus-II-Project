@@ -31,6 +31,11 @@ final class ProfileRepository {
         let now = Date()
         newUser.createdAt = now
         newUser.updatedAt = now
+        // Assign a random avatar color once, at creation, if none was set — so it's
+        // stored and consistent for everyone (no need to recompute it later).
+        if newUser.avatarColorHex.isEmpty || newUser.avatarColorHex.uppercased() == "D3D3D3" {
+            newUser.avatarColorHex = User.randomAvatarHex()
+        }
         let data = try Firestore.Encoder().encode(newUser)
         try await collection.document(newUser.id).setData(data)
         return newUser

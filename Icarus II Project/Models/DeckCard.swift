@@ -26,6 +26,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
     var dateText: String = ""          // "When?" pill content (e.g. "Today", "Tomorrow", "27/05/2026") - to discuss with the team
     var location: String               // "Where?" pill
     var colorHex: String = "D8D8D8"    // Accent color persisted as a hex string (no "#"). UI reads `color`.
+    var eventDate: Date? = nil         // Real event date (the day the activity happens). Drives match expiry.
     var createdAt: Date? = nil
     var updatedAt: Date? = nil
 
@@ -44,6 +45,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
         dateText: String = "",
         location: String,
         colorHex: String = "D8D8D8",
+        eventDate: Date? = nil,
         createdAt: Date? = nil,
         updatedAt: Date? = nil
     ) {
@@ -55,6 +57,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
         self.dateText = dateText
         self.location = location
         self.colorHex = colorHex
+        self.eventDate = eventDate
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -100,7 +103,7 @@ struct DeckCard: Identifiable, Equatable, Hashable, Codable {
 }
 extension DeckCard {
     private enum CodingKeys: String, CodingKey {
-        case id, ownerID, title, ownerName, category, dateText, location, colorHex, createdAt, updatedAt
+        case id, ownerID, title, ownerName, category, dateText, location, colorHex, eventDate, createdAt, updatedAt
     }
 
     // Tolerant decoder: missing fields fall back to sensible defaults so older or partial documents don't fail to load.
@@ -124,6 +127,7 @@ extension DeckCard {
         self.dateText = try c.decodeIfPresent(String.self, forKey: .dateText) ?? ""
         self.location = try c.decodeIfPresent(String.self, forKey: .location) ?? ""
         self.colorHex = try c.decodeIfPresent(String.self, forKey: .colorHex) ?? "D8D8D8"
+        self.eventDate = try c.decodeIfPresent(Date.self, forKey: .eventDate)
         self.createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt)
         self.updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt)
     }

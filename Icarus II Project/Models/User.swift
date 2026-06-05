@@ -54,10 +54,17 @@ struct User: Identifiable, Codable, Hashable, Sendable {
     ]
 
     // Deterministic hash → palette index, so the same id always maps to the same color.
+    // (Kept as a safety fallback for any user that has no stored color yet.)
     static func derivedAvatarHex(forSeed seed: String) -> String {
         guard !seed.isEmpty else { return avatarPalette[0] }
         let hash = seed.unicodeScalars.reduce(5381) { ($0 &* 33) &+ Int($1.value) }
         return avatarPalette[abs(hash) % avatarPalette.count]
+    }
+
+    // A random color from the 8-color palette — assigned once when the user is created
+    // and then stored, so it's consistent everywhere without recomputing.
+    static func randomAvatarHex() -> String {
+        avatarPalette.randomElement() ?? avatarPalette[0]
     }
 
     // Deep link that should open the app and connect the opener to this user.
