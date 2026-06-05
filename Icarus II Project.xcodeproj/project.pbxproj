@@ -10,6 +10,7 @@
 		1A53CA012FC71BA70097DB2A /* blaBlaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */; };
 		1A53CA022FC71BA70097DB2A /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */; };
 		1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 1A53CA052FC71C260097DB2A /* DEAL! icon.icon */; };
+		1AB16A552FD1FD0B005DD63D /* Nohemi-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1AB16A542FD1FD0B005DD63D /* Nohemi-Medium.otf */; };
 		A1D5898E2FC81BE800649DE9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898D2FC81BE800649DE9 /* FirebaseAuth */; };
 		A1D589902FC81BE800649DE9 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D5898F2FC81BE800649DE9 /* FirebaseCore */; };
 		A1D589922FC81BE800649DE9 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A1D589912FC81BE800649DE9 /* FirebaseFirestore */; };
@@ -22,26 +23,14 @@
 		1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = blaBlaApp.swift; sourceTree = "<group>"; };
 		1A53CA052FC71C260097DB2A /* DEAL! icon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "DEAL! icon.icon"; sourceTree = "<group>"; };
 		1A62FE572FBB1AC0002D01F7 /* Icarus II Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Icarus II Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AB16A542FD1FD0B005DD63D /* Nohemi-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nohemi-Medium.otf"; sourceTree = "<group>"; };
 		AF0DDE322FC98A3D00328F9B /* AppSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSessionView.swift; sourceTree = "<group>"; };
 		AFC187312FC89A2C001CD7C9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Icarus-II-Project-Info.plist",
-			);
-			target = 1A62FE562FBB1AC0002D01F7 /* Icarus II Project */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1A62FE592FBB1AC0002D01F7 /* Icarus II Project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AF7BB8622FCD80700068EABD /* Exceptions for "Icarus II Project" folder in "Icarus II Project" target */,
-			);
 			path = "Icarus II Project";
 			sourceTree = "<group>";
 		};
@@ -64,6 +53,7 @@
 		1A62FE4E2FBB1AC0002D01F7 = {
 			isa = PBXGroup;
 			children = (
+				1AB16A542FD1FD0B005DD63D /* Nohemi-Medium.otf */,
 				1A53CA052FC71C260097DB2A /* DEAL! icon.icon */,
 				1A53C9FF2FC71BA70097DB2A /* AppRootView.swift */,
 				1A53CA002FC71BA70097DB2A /* blaBlaApp.swift */,
@@ -154,6 +144,7 @@
 			files = (
 				AFC187322FC89A2C001CD7C9 /* GoogleService-Info.plist in Resources */,
 				1A53CA062FC71C260097DB2A /* DEAL! icon.icon in Resources */,
+				1AB16A552FD1FD0B005DD63D /* Nohemi-Medium.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
