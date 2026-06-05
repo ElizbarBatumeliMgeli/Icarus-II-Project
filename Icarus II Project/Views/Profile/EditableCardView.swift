@@ -203,18 +203,25 @@ struct EditableCardView: View {
             card.dateText = formatter.string(from: newDate)
             card.eventDate = newDate
         }
+        .onChange(of: card.category) { _, newCategory in
+            card.colorHex = hex(for: newCategory)
+        }
     }
 
     // MARK: - Category Color Mapping
-    private func color(for category: String) -> Color {
+    private func hex(for category: String) -> String {
         switch category {
-        case "Food": return Color(hex: "FF9500")   // Energetic Orange
-        case "Social": return Color(hex: "3478F6") // Vibrant Blue
-        case "Art": return Color(hex: "AF52DE")    // Creative Purple
-        case "Fun": return Color(hex: "FF2D55")    // Exciting Pink
-        case "Travel": return Color(hex: "34C759") // Nature Green
-        default: return Color(hex: "111111")
+        case "Food": return "FF9500"   // Energetic Orange
+        case "Social": return "3478F6" // Vibrant Blue
+        case "Art": return "AF52DE"    // Creative Purple
+        case "Fun": return "FF2D55"    // Exciting Pink
+        case "Travel": return "34C759" // Nature Green
+        default: return "111111"
         }
+    }
+
+    private func color(for category: String) -> Color {
+        return Color(hex: hex(for: category))
     }
 
     private func categoryPill(_ text: String, color: Color) -> some View {

@@ -160,10 +160,10 @@ struct MainFeedView: View {
                 Task { await viewModel.reloadFeed() }
             }
         }
-        .onChange(of: viewModel.user.connections) { _ in
+        .onChange(of: viewModel.user.connections) { _, _ in
             Task { await viewModel.reloadFeed() }
         }
-        .onChange(of: viewModel.currentOwnerID) { _ in
+        .onChange(of: viewModel.currentOwnerID) { _, _ in
             Task { await viewModel.reloadFeed() }
         }
     }

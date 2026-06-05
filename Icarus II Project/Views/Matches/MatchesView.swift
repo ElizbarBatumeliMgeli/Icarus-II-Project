@@ -664,7 +664,7 @@ struct BackToFeedButton: View {
             }
             .frame(width: size, height: size)
         }
-        .buttonStyle(PhysicalButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 

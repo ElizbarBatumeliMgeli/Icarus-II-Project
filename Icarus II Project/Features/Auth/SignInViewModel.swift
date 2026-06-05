@@ -32,7 +32,7 @@ final class AppleAuthManager {
     /// Needed to create the Firebase credential after Apple returns.
     private(set) var currentNonce: String?
 
-    init(repository: AuthRepository = DefaultAuthRepository()) {
+    init(repository: AuthRepository) {
         self.repository = repository
         Task {
             if let cachedProfile = repository.fetchCurrentSessionProfile() {
@@ -42,6 +42,10 @@ final class AppleAuthManager {
                self.authState = .signedOut
             }
         }
+    }
+
+    convenience init() {
+        self.init(repository: DefaultAuthRepository())
     }
 
     // MARK: - Nonce Helper
