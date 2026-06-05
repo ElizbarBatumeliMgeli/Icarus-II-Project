@@ -366,6 +366,10 @@ struct ProfileDeckView: View {
                 .presentationBackground(.clear)
             }
         }
+        // Refresh my own deck from Firestore when the profile opens.
+        .task {
+            await viewModel.reloadCards()
+        }
     }
 }
 

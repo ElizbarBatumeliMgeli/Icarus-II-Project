@@ -7,26 +7,13 @@
 
 import SwiftUI
 
-// Mock Data Model
-struct ConnectionUser: Identifiable {
-    let id = UUID()
-    let rank: Int
-    let name: String
-    let points: Int
-    let avatarColor: Color
-}
-
 struct ConnectionsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(UserViewModel.self) private var userViewModel
 
-    // Mock Data Array
-    let connections: [ConnectionUser] = [
-        ConnectionUser(rank: 1, name: "Carlo Cudicini", points: 256, avatarColor: Color(hex: "FF6B6B")),
-        ConnectionUser(rank: 2, name: "Maria Rossi", points: 198, avatarColor: Color(hex: "4ECDC4")),
-        ConnectionUser(rank: 3, name: "Luca Bianchi", points: 145, avatarColor: Color(hex: "FFE66D")),
-        ConnectionUser(rank: 4, name: "Giulia Verdi", points: 90, avatarColor: Color(hex: "9B5DE5")),
-        ConnectionUser(rank: 5, name: "Andrea Neri", points: 42, avatarColor: Color(hex: "00BBF9"))
-    ]
+    // Real connections, loaded from Firestore (the people this user is connected with).
+    @State private var connections: [User] = []
+    @State private var isLoading = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -55,58 +42,82 @@ struct ConnectionsView: View {
                     .padding(.top, height * 0.06)
                     .padding(.bottom, height * 0.04)
 
-                    // Minimalist List
-                    ScrollView {
-                        LazyVStack(spacing: width * 0.04) {
-                            ForEach(connections) { connection in
-                                ConnectionRow(connection: connection, width: width)
+                    if connections.isEmpty {
+                        // Empty / loading state
+                        VStack(spacing: height * 0.012) {
+                            Spacer()
+                            Text(isLoading ? "Loading…" : "No connections yet")
+                                .font(.system(size: width * 0.05, weight: .semibold))
+                                .foregroundStyle(.white)
+                            if !isLoading {
+                                Text("Share your link to connect with people.")
+                                    .font(.system(size: width * 0.04, weight: .medium))
+                                    .foregroundStyle(.white.opacity(0.6))
+                                    .multilineTextAlignment(.center)
                             }
+                            Spacer()
                         }
+                        .frame(maxWidth: .infinity)
                         .padding(.horizontal, horizontal)
-                        .padding(.bottom, height * 0.05)
+                    } else {
+                        // Minimalist List of real connections
+                        ScrollView {
+                            LazyVStack(spacing: width * 0.04) {
+                                ForEach(Array(connections.enumerated()), id: \.element.id) { index, user in
+                                    ConnectionRow(user: user, rank: index + 1, width: width)
+                                }
+                            }
+                            .padding(.horizontal, horizontal)
+                            .padding(.bottom, height * 0.05)
+                        }
                     }
                 }
             }
+        }
+        .task { await loadConnections() }
+    }
+
+    private func loadConnections() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            connections = try await userViewModel.loadConnections()
+        } catch {
+            connections = []
         }
     }
 }
 
 // A reusable row mimicking the minimalist aesthetic
 struct ConnectionRow: View {
-    let connection: ConnectionUser
+    let user: User
+    let rank: Int
     let width: CGFloat
 
     var body: some View {
         HStack(spacing: width * 0.04) {
-            // Ranking Number
-            Text("\(connection.rank).")
+            // Position in the list
+            Text("\(rank).")
                 .font(.system(size: width * 0.055, weight: .bold))
                 .foregroundStyle(.white.opacity(0.8))
                 .frame(width: width * 0.08, alignment: .leading)
 
-            // Avatar Frame
+            // Avatar: derived color + first initial of the connection's name
             ZStack {
                 Circle()
-                    .fill(connection.avatarColor)
+                    .fill(user.avatarColor)
                     .frame(width: width * 0.14, height: width * 0.14)
                     .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
-                
-                // Fallback initial
-                Text(String(connection.name.prefix(1)))
+
+                Text(user.initial)
                     .font(.system(size: width * 0.06, weight: .bold))
                     .foregroundStyle(.white)
             }
 
-            // Name and Points breakdown
-            VStack(alignment: .leading, spacing: width * 0.01) {
-                Text(connection.name)
-                    .font(.system(size: width * 0.045, weight: .semibold))
-                    .foregroundStyle(.white)
-
-                Text("\(connection.points) pts")
-                    .font(.system(size: width * 0.035, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.6))
-            }
+            // Name
+            Text(user.displayName)
+                .font(.system(size: width * 0.045, weight: .semibold))
+                .foregroundStyle(.white)
 
             Spacer()
         }

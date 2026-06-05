@@ -39,5 +39,11 @@ extension Match {
     }
 }
 
-
-    // history inside the match - is what we already did, where, with who, storing all the data of the activity
+// A matched card enriched with the people involved, for the Matches screen:
+// the card's owner, plus everyone else who also matched the same card.
+struct MatchedCardInfo: Identifiable {
+    let card: DeckCard
+    let owner: User?
+    let otherMatchers: [User]
+    var id: UUID { card.id }
+}

@@ -69,6 +69,20 @@ struct AppRootView: View {
             .task {
                 if let id = authManager.currentUserProfile?.userID {
                     await userViewModel.load(id: id)
+                    // Scope the deck/feed to the real signed-in user + their connections.
+                    if let signedInUser = userViewModel.user {
+                        viewModel.bind(to: signedInUser)
+                        await viewModel.reloadCards()   // my own deck (persisted cards)
+                        await viewModel.reloadFeed()
+                    }
+                }
+            }
+            // Re-bind when the profile/connections change (e.g. after connecting to someone)
+            // so the feed refreshes with the new connections.
+            .onChange(of: userViewModel.user) { _, newUser in
+                if let newUser {
+                    viewModel.bind(to: newUser)
+                    Task { await viewModel.reloadFeed() }
                 }
             }
         }
