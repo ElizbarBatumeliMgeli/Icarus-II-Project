@@ -43,6 +43,32 @@ final class DeckCardRepository {
         return result
     }
 
+    // MARK: - Live listeners (real-time)
+
+    // Live updates for one user's own deck. Returns a registration the caller MUST keep a
+    // reference to and `.remove()` when done. `onChange` is delivered on the main actor.
+    func observeMyDeck(ownerID: String,
+                       onChange: @escaping @MainActor ([DeckCard]) -> Void) -> ListenerRegistration {
+        collection
+            .whereField("ownerID", isEqualTo: ownerID)
+            .addSnapshotListener { snapshot, _ in
+                let cards = (snapshot?.documents ?? []).compactMap { try? $0.data(as: DeckCard.self) }
+                Task { @MainActor in onChange(cards) }
+            }
+    }
+
+    // Live updates for one chunk (≤10 ids — Firestore's `in` cap) of connection owners.
+    // The feed merges several of these. `onChange` is delivered on the main actor.
+    func observeFeedChunk(ownerIDs: [String],
+                          onChange: @escaping @MainActor ([DeckCard]) -> Void) -> ListenerRegistration {
+        collection
+            .whereField("ownerID", in: ownerIDs)
+            .addSnapshotListener { snapshot, _ in
+                let cards = (snapshot?.documents ?? []).compactMap { try? $0.data(as: DeckCard.self) }
+                Task { @MainActor in onChange(cards) }
+            }
+    }
+
     // Load specific cards by their document ids — used to turn a list of matched card ids into cards.
     // Same 10-value `in` limit, so we chunk here too.
     func cards(withIDs ids: [String]) async throws -> [DeckCard] {

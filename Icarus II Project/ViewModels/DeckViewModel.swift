@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 @MainActor
 @Observable
@@ -23,7 +24,50 @@ final class DeckViewModel {
     private let repository = DeckCardRepository()
     private let matchRepository = MatchRepository()
     private let profileRepository = ProfileRepository()
-    var isLoading: Bool = false
+
+    // MARK: - Loading state
+    //
+    // Each screen gets its OWN loading flag, so one screen's fetch can never make
+    // another screen flash its loading UI. (Previously a single shared `isLoading`
+    // was flipped by every fetch, which made the feed jump to its skeleton whenever
+    // Matches, the profile deck, or a card save happened to be loading.)
+    private(set) var isLoadingFeed = false
+    private(set) var isLoadingMyDeck = false
+    private(set) var isLoadingMatches = false
+
+    // True once the feed has finished its first load attempt. Used so the shimmer
+    // skeleton only appears on the very first load — never on later refreshes.
+    private(set) var hasLoadedFeedOnce = false
+
+    // Feed-facing loading flag that MainFeedView reads. Computed (not stored) so the
+    // skeleton shows ONLY during the first feed load. On every refresh after that, the
+    // existing cards stay on screen instead of flashing back to the skeleton.
+    var isLoading: Bool { isLoadingFeed && !hasLoadedFeedOnce }
+
+    // Coalesces duplicate one-shot loads (used by the Matches screen): when several views
+    // trigger the same refresh at once, only ONE Firestore query runs and the extra callers
+    // await that same result. See `LoadCoalescer`.
+    // (Feed and My Deck no longer need this — they use the live snapshot listeners below,
+    //  which are inherently a single source of truth.)
+    private let matchesLoader = LoadCoalescer()
+
+    // MARK: - Live listeners
+    //
+    // The feed and my-deck stay current in real time via Firestore snapshot listeners, so
+    // they update without navigating away and back, and load instantly from Firestore's
+    // on-device cache. We keep the registrations so we can detach/re-scope them when the
+    // account or connections change, and remove them when the view model goes away.
+    private var myDeckListener: ListenerRegistration?
+    private var myDeckListenerOwnerID = ""
+
+    private var feedChunkListeners: [ListenerRegistration] = []
+    private var feedChunkResults: [Int: [DeckCard]] = [:]   // per-chunk cards, merged in rebuildFeed()
+    private var feedScopeKey = ""                            // owner + connections signature; makes start idempotent
+
+    // Holds the active registrations so they can be detached even from `deinit` (which is
+    // nonisolated and can't read the main-actor properties above). See `ListenerBag`.
+    private nonisolated let listenerBag = ListenerBag()
+
     var errorMessage: String?
 
     // Card ids I've already acted on (matched or dismissed), used to filter the feed.
@@ -87,19 +131,28 @@ final class DeckViewModel {
         if userChanged {
             actedCardIDs = []
             actedSetLoaded = false
+            feedScopeKey = ""            // force the feed listeners to restart for the new account
         }
+        // Show the feed skeleton immediately on the very first load (before the first
+        // snapshot arrives), then attach the live listeners. Re-binds after that don't
+        // re-show the skeleton (see `isLoading`).
+        if !hasLoadedFeedOnce { isLoadingFeed = true }
+        startMyDeckListener()
+        Task { await startFeedListeners() }
     }
 
     // MARK: - My deck
 
     // EL - Loads MY OWN cards into `cards` (used by the profile deck). Fire-and-forget from the UI.
+    // Now backed by a live listener, so the deck stays current on its own.
     func fetchCards() {
-        Task { await loadFromRepository() }
+        startMyDeckListener()
     }
 
-    // Async variant for views that want to await the refresh (e.g. .task).
+    // Async variant kept for views that `await` it (e.g. .task). With the live listener in
+    // place this just ensures we're listening; the data then updates on its own.
     func reloadCards() async {
-        await loadFromRepository()
+        startMyDeckListener()
     }
 
     // True while the card's event day hasn't passed. Cards without an event date
@@ -109,56 +162,102 @@ final class DeckViewModel {
         return Calendar.current.startOfDay(for: event) >= Calendar.current.startOfDay(for: Date())
     }
 
-    private func loadFromRepository() async {
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
+    // Starts (or keeps) the live listener for my own deck. Idempotent for the same account.
+    private func startMyDeckListener() {
+        guard !currentOwnerID.isEmpty else { return }
+        if myDeckListener != nil && myDeckListenerOwnerID == currentOwnerID { return }
 
-        do {
+        myDeckListener?.remove()
+        myDeckListenerOwnerID = currentOwnerID
+        isLoadingMyDeck = true
+
+        myDeckListener = repository.observeMyDeck(ownerID: currentOwnerID) { [weak self] cards in
+            guard let self else { return }
             // Show my cards through the end of each event's day; drop expired ones.
-            let mine = try await repository.fetch(ownerID: currentOwnerID)
-            cards = mine.filter { isEventLive($0) }
-        } catch {
-            errorMessage = error.localizedDescription
+            self.cards = cards.filter { self.isEventLive($0) }
+            self.isLoadingMyDeck = false
         }
+        syncListenerBag()
     }
 
     // MARK: - Feed (cards from my connections)
 
     // EL - Loads the swipe feed into `feedCards` (cards from my connections, excluding my own); call this when the feed appears — it relies on `user.connections`, which becomes the real list once auth/profile load is in.
     func loadFeed() {
-        Task { await loadFeedFromRepository() }
+        Task { await reloadFeed() }
     }
 
-    // Async variant for views that want to await the refresh (e.g., .task or .refreshable)
+    // Async variant kept for views that `await` it (.task / scenePhase / onChange). With the
+    // live listeners in place this just ensures we're listening for the current connection
+    // set; the feed then updates on its own. Idempotent if nothing changed.
     func reloadFeed() async {
-        await loadFeedFromRepository()
+        await startFeedListeners()
     }
 
-    private func loadFeedFromRepository() async {
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
+    // Starts (or re-scopes) the live feed listeners for my current connections.
+    // Idempotent: if the connection set is unchanged and we're already listening, no-op.
+    private func startFeedListeners() async {
+        let connections = user.connections
+        let scopeKey = currentOwnerID + "|" + connections.sorted().joined(separator: ",")
+        if scopeKey == feedScopeKey && !feedChunkListeners.isEmpty { return }
+        feedScopeKey = scopeKey
 
-        do {
-            // Strictly connection-scoped: only cards owned by people I'm connected to.
-            // No connections → empty feed (EmptyFeedView). My own cards are excluded
-            // automatically, since my own id is never in my connections list.
-            let connectionCards = try await repository.feed(fromOwnerIDs: user.connections)
+        // Detach any previous chunk listeners before re-scoping.
+        feedChunkListeners.forEach { $0.remove() }
+        feedChunkListeners = []
+        feedChunkResults = [:]
 
-            // Seed the acted-on set ONCE from Firestore (matched .accepted + dismissed .blocked).
-            // After that it's maintained locally by match()/dismiss(), so refreshes don't
-            // re-download the whole swipe history.
-            if !actedSetLoaded {
+        // No connections → empty feed (the view shows EmptyFeedView). My own cards are never
+        // in the feed, since my own id is never in my connections list.
+        guard !connections.isEmpty else {
+            feedCards = []
+            isLoadingFeed = false
+            hasLoadedFeedOnce = true
+            syncListenerBag()
+            return
+        }
+
+        isLoadingFeed = true
+
+        // Firestore `in` caps at 10 owner ids, so we listen per chunk and merge the results.
+        // (Attach synchronously — no `await` before this — so two concurrent starts can't
+        //  both slip past the idempotency check and double-attach.)
+        for (index, chunk) in Self.chunked(connections, size: 10).enumerated() {
+            let listener = repository.observeFeedChunk(ownerIDs: chunk) { [weak self] cards in
+                guard let self else { return }
+                self.feedChunkResults[index] = cards
+                self.rebuildFeed()
+                self.isLoadingFeed = false
+                self.hasLoadedFeedOnce = true
+            }
+            feedChunkListeners.append(listener)
+        }
+        syncListenerBag()
+
+        // Seed the acted-on set ONCE so the feed can exclude cards I've already swiped.
+        // After that it's kept current locally by match()/dismiss(). Re-filter once it lands.
+        if !actedSetLoaded {
+            do {
                 let actedOn = try await matchRepository.forMatcher(currentOwnerID)
                 actedCardIDs = Set(actedOn.map { $0.cardID })
                 actedSetLoaded = true
+                rebuildFeed()
+            } catch {
+                errorMessage = error.localizedDescription
             }
+        }
+    }
 
-            // Hide cards I've already acted on so they never resurrect on a refresh.
-            feedCards = connectionCards.filter { !actedCardIDs.contains($0.id.uuidString) }
-        } catch {
-            errorMessage = error.localizedDescription
+    // Merges the per-chunk listener results and hides cards I've already acted on.
+    private func rebuildFeed() {
+        let all = feedChunkResults.values.flatMap { $0 }
+        feedCards = all.filter { !actedCardIDs.contains($0.id.uuidString) }
+    }
+
+    // Splits an array into sub-arrays of at most `size` elements (for chunked `in` listeners).
+    private static func chunked<T>(_ array: [T], size: Int) -> [[T]] {
+        stride(from: 0, to: array.count, by: size).map {
+            Array(array[$0..<Swift.min($0 + size, array.count)])
         }
     }
 
@@ -217,7 +316,8 @@ final class DeckViewModel {
         Task {
             do {
                 try await repository.upsert(toSave)
-                await loadFeedFromRepository()
+                // The my-deck listener reflects this automatically, and my own cards never
+                // appear in the feed, so no manual refresh is needed here.
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -304,18 +404,22 @@ final class DeckViewModel {
 
     // EL - Loads the cards I've matched with into `matchedCards` (reads my matches, then fetches those cards); call this when MatchesView appears.
     func loadMatchedCards() {
-        Task { await loadMatchedCardsFromRepository() }
+        Task { await reloadMatchedCards() }
     }
 
     // Async variant for views that want to await the refresh (e.g. .task).
+    // Coalesced, and uses its own loading flag so the feed is never affected.
     func reloadMatchedCards() async {
-        await loadMatchedCardsFromRepository()
+        await matchesLoader.run { [weak self] in
+            guard let self else { return }
+            await self.performMatchedCardsLoad()
+        }
     }
 
-    private func loadMatchedCardsFromRepository() async {
-        isLoading = true
+    private func performMatchedCardsLoad() async {
+        isLoadingMatches = true
         errorMessage = nil
-        defer { isLoading = false }
+        defer { isLoadingMatches = false }
 
         do {
             // Only real matches (.accepted) — dismissed cards (.blocked) live here too
@@ -351,6 +455,65 @@ final class DeckViewModel {
     // Purely local UX.
     func shuffle() {
         cards.shuffle()
+    }
+
+    // Keeps `listenerBag` in sync with the currently-active listeners, so teardown can
+    // detach them from `deinit` (which can't read main-actor state directly).
+    private func syncListenerBag() {
+        listenerBag.setRegistrations([myDeckListener].compactMap { $0 } + feedChunkListeners)
+    }
+
+    // Detach all live listeners when the view model is torn down (e.g. on logout).
+    deinit {
+        listenerBag.removeAll()
+    }
+}
+
+// MARK: - LoadCoalescer
+//
+// Ensures only ONE run of a given async load happens at a time. If extra callers ask
+// for the same load while it's already running, they await the in-flight run instead
+// of kicking off a duplicate Firestore query. This is what lets several views each
+// trigger `reloadFeed()` on launch without causing multiple queries or UI flashes.
+//
+// One instance per data set (feed / my deck / matches), so the three loads stay
+// independent of each other. Kept in this file for now; can move to its own file later.
+@MainActor
+final class LoadCoalescer {
+    private var task: Task<Void, Never>?
+
+    func run(_ work: @escaping () async -> Void) async {
+        // A load is already running — piggy-back on it instead of starting another.
+        if let task {
+            await task.value
+            return
+        }
+        let newTask = Task { await work() }
+        task = newTask
+        await newTask.value
+        task = nil
+    }
+}
+
+// MARK: - ListenerBag
+//
+// Small holder for Firestore listener registrations. Lets the view model detach its
+// listeners from `deinit`, which is nonisolated and therefore can't read the view model's
+// main-actor properties directly. Registrations are only set from the main actor and only
+// flushed once at teardown, so @unchecked Sendable is safe here.
+final class ListenerBag: @unchecked Sendable {
+    private var registrations: [ListenerRegistration] = []
+
+    // Replace the tracked set. The view model already attaches/detaches when it re-scopes;
+    // this just mirrors the current set so `removeAll()` can clean everything up later.
+    func setRegistrations(_ registrations: [ListenerRegistration]) {
+        self.registrations = registrations
+    }
+
+    // Detach everything. Called once on teardown.
+    func removeAll() {
+        registrations.forEach { $0.remove() }
+        registrations = []
     }
 }
 
