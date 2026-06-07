@@ -89,6 +89,7 @@ struct MainFeedView: View {
                                     card: first,
                                     width: cardWidth,
                                     height: cardHeight,
+                                    participants: viewModel.participants(for: first),
                                     onSwipe: { isRightSwipe in
                                         if isRightSwipe {
                                             triggerDeal()

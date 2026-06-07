@@ -11,6 +11,8 @@ struct FeedCardView: View {
     let card: DeckCard
     let width: CGFloat
     let height: CGFloat
+    // Real matchers on this card (colour + initial). Empty → "Be the first" state.
+    var participants: [User] = []
     let onSwipe: (Bool) -> Void
 
     @State private var offset: CGSize = .zero
@@ -234,18 +236,40 @@ struct FeedCardView: View {
 
     private func participantsGroup() -> some View {
         VStack(alignment: .center, spacing: width * 0.02) {
-            HStack(spacing: -width * 0.06) {
-                ForEach(0..<3, id: \.self) { _ in
-                    Circle()
-                        .fill(Color(hex: "D8D8D8"))
-                        .frame(width: width * 0.12, height: width * 0.12)
-                        .overlay(Circle().stroke(.black, lineWidth: 1.5))
+            if participants.isEmpty {
+                // Nobody has matched this card yet — invite the user instead of showing avatars.
+                Text("Be the first")
+                    .font(.system(size: width * 0.03, weight: .medium))
+                    .foregroundStyle(.black.opacity(0.6))
+            } else {
+                HStack(spacing: -width * 0.06) {
+                    // Real matchers: colour + initial, capped at 3 with a "+N" overflow badge.
+                    ForEach(participants.prefix(3)) { user in
+                        participantBadge(color: user.avatarColor, text: user.initial)
+                    }
+                    if participants.count > 3 {
+                        participantBadge(color: Color.black.opacity(0.6), text: "+\(participants.count - 3)")
+                    }
                 }
+                Text("Other participants")
+                    .font(.system(size: width * 0.03, weight: .medium))
+                    .foregroundStyle(.black.opacity(0.6))
             }
-            Text("Other participants")
-                .font(.system(size: width * 0.03, weight: .medium))
-                .foregroundStyle(.black.opacity(0.6))
         }
+    }
+
+    // A single participant avatar — same circle style as before, now filled with the
+    // user's colour and initial (or a "+N" overflow chip).
+    private func participantBadge(color: Color, text: String) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: width * 0.12, height: width * 0.12)
+            .overlay(Circle().stroke(.black, lineWidth: 1.5))
+            .overlay(
+                Text(text)
+                    .font(.system(size: width * 0.05, weight: .bold))
+                    .foregroundStyle(.white)
+            )
     }
     
     private func startIdle() {
