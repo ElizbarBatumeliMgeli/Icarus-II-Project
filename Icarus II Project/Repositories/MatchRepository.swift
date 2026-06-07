@@ -40,6 +40,18 @@ final class MatchRepository {
         return try snapshot.documents.map { try $0.data(as: Match.self) }
     }
 
+    // Live updates of every match on a single card. Returns a registration the caller MUST
+    // keep and `.remove()` when done. `onChange` is delivered on the main actor.
+    func observeCard(cardID: String,
+                     onChange: @escaping @MainActor ([Match]) -> Void) -> ListenerRegistration {
+        collection
+            .whereField("cardID", isEqualTo: cardID)
+            .addSnapshotListener { snapshot, _ in
+                let matches = (snapshot?.documents ?? []).compactMap { try? $0.data(as: Match.self) }
+                Task { @MainActor in onChange(matches) }
+            }
+    }
+
     // Remove a match by its deterministic id (e.g. to undo a swipe).
     func delete(id: String) async throws {
         try await collection.document(id).delete()

@@ -68,6 +68,13 @@ final class DeckViewModel {
     // nonisolated and can't read the main-actor properties above). See `ListenerBag`.
     private nonisolated let listenerBag = ListenerBag()
 
+    // Real participants (other users who've matched a card) shown on feed cards, keyed by
+    // card id. Populated just-in-time: a LIVE listener for the top card, plus a one-shot
+    // pre-warm for the card behind it so there's no pop-in when it becomes top.
+    private(set) var participantsByCardID: [String: [User]] = [:]
+    private var topCardID = ""
+    private var topMatchersListener: ListenerRegistration?
+
     var errorMessage: String?
 
     // Card ids I've already acted on (matched or dismissed), used to filter the feed.
@@ -132,6 +139,10 @@ final class DeckViewModel {
             actedCardIDs = []
             actedSetLoaded = false
             feedScopeKey = ""            // force the feed listeners to restart for the new account
+            participantsByCardID = [:]
+            topCardID = ""
+            topMatchersListener?.remove()
+            topMatchersListener = nil
         }
         // Show the feed skeleton immediately on the very first load (before the first
         // snapshot arrives), then attach the live listeners. Re-binds after that don't
@@ -252,6 +263,60 @@ final class DeckViewModel {
     private func rebuildFeed() {
         let all = feedChunkResults.values.flatMap { $0 }
         feedCards = all.filter { !actedCardIDs.contains($0.id.uuidString) }
+        refreshFeedParticipants()
+    }
+
+    // MARK: - Feed participants (real avatars on the cards)
+
+    // The other users who've matched `card` (rendered as colour + initial). Empty until
+    // someone matches it (the view shows the "Be the first" state in that case).
+    func participants(for card: DeckCard) -> [User] {
+        participantsByCardID[card.id.uuidString] ?? []
+    }
+
+    // Keeps a LIVE listener pointed at the top feed card, and pre-warms the card behind it
+    // so its participants are ready the moment it becomes top. Called whenever the feed
+    // changes (load, match, dismiss).
+    private func refreshFeedParticipants() {
+        let topID = feedCards.first?.id.uuidString
+        if topID != topCardID {
+            topCardID = topID ?? ""
+            topMatchersListener?.remove()
+            topMatchersListener = nil
+            if let topID {
+                topMatchersListener = matchRepository.observeCard(cardID: topID) { [weak self] matches in
+                    guard let self else { return }
+                    Task { await self.resolveParticipants(forCardID: topID, from: matches) }
+                }
+            }
+            syncListenerBag()
+        }
+
+        // Pre-warm the card behind the top one (one-shot) so there's no pop-in when it surfaces.
+        if let backID = feedCards.dropFirst().first?.id.uuidString,
+           participantsByCardID[backID] == nil {
+            Task { [weak self] in
+                guard let self else { return }
+                if let matches = try? await self.matchRepository.forCard(backID) {
+                    await self.resolveParticipants(forCardID: backID, from: matches)
+                }
+            }
+        }
+    }
+
+    // Resolves a card's accepted matchers (excluding me; owners aren't matchers) into users
+    // for the avatar row.
+    private func resolveParticipants(forCardID cardID: String, from matches: [Match]) async {
+        let otherIDs = matches
+            .filter { $0.status == .accepted && $0.matcherID != currentOwnerID }
+            .map { $0.matcherID }
+        guard !otherIDs.isEmpty else {
+            participantsByCardID[cardID] = []
+            return
+        }
+        if let users = try? await profileRepository.users(withIDs: otherIDs) {
+            participantsByCardID[cardID] = users
+        }
     }
 
     // Splits an array into sub-arrays of at most `size` elements (for chunked `in` listeners).
@@ -342,6 +407,7 @@ final class DeckViewModel {
     func match(_ card: DeckCard) {
         feedCards.removeAll { $0.id == card.id }
         actedCardIDs.insert(card.id.uuidString)   // keep the feed-exclusion cache current
+        refreshFeedParticipants()                 // top card changed → re-point the live listener
 
         // Instant feedback: show it in Matches immediately (deduped). Owner + other matchers
         // get filled in by the next loadMatchedCards() when the Matches screen opens.
@@ -372,6 +438,7 @@ final class DeckViewModel {
     func dismiss(_ card: DeckCard) {
         feedCards.removeAll { $0.id == card.id }
         actedCardIDs.insert(card.id.uuidString)   // keep the feed-exclusion cache current
+        refreshFeedParticipants()                 // top card changed → re-point the live listener
 
         let dismissal = Match(
             id: Match.id(cardID: card.id.uuidString, matcherID: currentOwnerID),
@@ -432,18 +499,40 @@ final class DeckViewModel {
             let liveCards = cards.filter { isEventLive($0) }
 
             // Enrich each card with its owner and the other people who matched it.
-            var infos: [MatchedCardInfo] = []
-            for card in liveCards {
-                let owner = try? await profileRepository.fetch(id: card.ownerID)
+            // Done concurrently: every card's lookups run at the same time, and within a
+            // single card the owner fetch overlaps the card's match lookup. So the screen
+            // loads in roughly the time of the slowest single card instead of the sum of
+            // all of them (previously this was a serial loop = N cards × 3 round-trips).
+            let me = currentOwnerID
+            let profileRepo = profileRepository
+            let matchRepo = matchRepository
 
-                let cardMatches = try await matchRepository.forCard(card.id.uuidString)
-                let otherIDs = cardMatches
-                    .filter { $0.status == .accepted && $0.matcherID != currentOwnerID }
-                    .map { $0.matcherID }
-                let otherMatchers = try await profileRepository.users(withIDs: otherIDs)
+            let infos = try await withThrowingTaskGroup(of: (Int, MatchedCardInfo).self) { group -> [MatchedCardInfo] in
+                for (index, card) in liveCards.enumerated() {
+                    group.addTask {
+                        // owner and the card's matches don't depend on each other → fetch together
+                        async let ownerLookup = profileRepo.fetch(id: card.ownerID)
 
-                infos.append(MatchedCardInfo(card: card, owner: owner, otherMatchers: otherMatchers))
+                        let cardMatches = try await matchRepo.forCard(card.id.uuidString)
+                        let otherIDs = cardMatches
+                            .filter { $0.status == .accepted && $0.matcherID != me }
+                            .map { $0.matcherID }
+                        let otherMatchers = try await profileRepo.users(withIDs: otherIDs)
+
+                        let owner = try? await ownerLookup
+                        return (index, MatchedCardInfo(card: card, owner: owner, otherMatchers: otherMatchers))
+                    }
+                }
+
+                // A TaskGroup yields results in completion order, so place each one back at
+                // its original index to keep a stable on-screen order across loads.
+                var ordered = [MatchedCardInfo?](repeating: nil, count: liveCards.count)
+                for try await (index, info) in group {
+                    ordered[index] = info
+                }
+                return ordered.compactMap { $0 }
             }
+
             matchedCardInfos = infos
         } catch {
             errorMessage = error.localizedDescription
@@ -460,7 +549,9 @@ final class DeckViewModel {
     // Keeps `listenerBag` in sync with the currently-active listeners, so teardown can
     // detach them from `deinit` (which can't read main-actor state directly).
     private func syncListenerBag() {
-        listenerBag.setRegistrations([myDeckListener].compactMap { $0 } + feedChunkListeners)
+        listenerBag.setRegistrations(
+            [myDeckListener, topMatchersListener].compactMap { $0 } + feedChunkListeners
+        )
     }
 
     // Detach all live listeners when the view model is torn down (e.g. on logout).
