@@ -26,7 +26,7 @@ struct SignInView: View {
                         .font(.title.bold())
                         .foregroundStyle(Color.white)
                     
-                    Text("Your name will be securely captured on the first attempt.")
+                    Text("We need your full name and Apple ID to register your account.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .foregroundStyle(Color.white)

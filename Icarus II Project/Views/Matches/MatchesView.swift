@@ -116,13 +116,13 @@ struct MatchesView: View {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedInfo = nil
                             }
-                            Task { await viewModel.cancelMatch(card: card) }
+                            Task { await viewModel.cancelMatch(card: info.card) }
                         },
                         onSuccess: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                                 expandedInfo = nil
                             }
-                            Task { await viewModel.completeMatch(card: card) }
+                            Task { await viewModel.completeMatch(card: info.card) }
                         }
                     )
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))

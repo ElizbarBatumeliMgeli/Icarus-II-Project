@@ -295,10 +295,10 @@ private struct OnboardingCardView: View {
                             .foregroundColor(shakeTitleThrows > 0 ? .red : .black.opacity(0.45)),
                         axis: .vertical
                     )
-                    .font(.custom("Nohemi-Medium", fixedSize: 40))
+                    .font(.custom("Nohemi-Medium", fixedSize: 35))
                     .foregroundStyle(.black.opacity(0.82))
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .minimumScaleFactor(0.72)
                     .tint(borderColor)
                     .fixedSize(horizontal: false, vertical: true)
