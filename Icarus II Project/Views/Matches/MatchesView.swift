@@ -10,7 +10,7 @@ import SwiftUI
 struct MatchesView: View {
     @Bindable var viewModel: DeckViewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var expandedCard: DeckCard? = nil // Tracks the tapped card
+    @State private var expandedInfo: MatchedCardInfo? = nil // Tracks the tapped match (card + participants)
 
     var body: some View {
         GeometryReader { proxy in
@@ -80,7 +80,7 @@ struct MatchesView: View {
                                 ForEach(viewModel.matchedCardInfos) { info in
                                     Button {
                                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                            expandedCard = info.card
+                                            expandedInfo = info
                                         }
                                     } label: {
                                         MatchRowCardView(info: info, width: width)
@@ -98,28 +98,29 @@ struct MatchesView: View {
                     Spacer(minLength: 0)
                 }
                 .ignoresSafeArea(edges: .top)
-                .blur(radius: expandedCard != nil ? 15 : 0) // Blur background when overlay is active
-                
+                .blur(radius: expandedInfo != nil ? 15 : 0) // Blur background when overlay is active
+
                 // Full-screen overlay for expanded card details
-                if let card = expandedCard {
+                if let info = expandedInfo {
                     ExpandedMatchOverlay(
-                        card: card,
+                        card: info.card,
+                        participants: info.otherMatchers,
                         width: width,
                         height: height,
                         onClose: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                expandedCard = nil
+                                expandedInfo = nil
                             }
                         },
                         onFail: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                expandedCard = nil
+                                expandedInfo = nil
                             }
                             Task { await viewModel.cancelMatch(card: card) }
                         },
                         onSuccess: {
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                expandedCard = nil
+                                expandedInfo = nil
                             }
                             Task { await viewModel.completeMatch(card: card) }
                         }
@@ -141,6 +142,8 @@ struct MatchesView: View {
 // ── Expanded Match Overlay ───────────────────────────────────────────────────
 private struct ExpandedMatchOverlay: View {
     let card: DeckCard
+    // The other users who matched this card (colour + initial). Empty → "Just you so far".
+    let participants: [User]
     let width: CGFloat
     let height: CGFloat
     let onClose: () -> Void
@@ -363,18 +366,39 @@ private struct ExpandedMatchOverlay: View {
 
     private func participantsGroup(cardW: CGFloat) -> some View {
         VStack(alignment: .center, spacing: cardW * 0.02) {
-            HStack(spacing: -cardW * 0.06) {
-                ForEach(0..<3, id: \.self) { _ in
-                    Circle()
-                        .fill(Color(hex: "D8D8D8"))
-                        .frame(width: cardW * 0.12, height: cardW * 0.12)
-                        .overlay(Circle().stroke(.black, lineWidth: 1.5))
+            if participants.isEmpty {
+                // I matched this card but no one else has yet.
+                Text("Just you so far")
+                    .font(.system(size: cardW * 0.03, weight: .medium))
+                    .foregroundStyle(.black.opacity(0.6))
+            } else {
+                HStack(spacing: -cardW * 0.06) {
+                    // Real matchers: colour + initial, capped at 3 with a "+N" overflow badge.
+                    ForEach(participants.prefix(3)) { user in
+                        participantBadge(color: user.avatarColor, text: user.initial, cardW: cardW)
+                    }
+                    if participants.count > 3 {
+                        participantBadge(color: Color.black.opacity(0.6), text: "+\(participants.count - 3)", cardW: cardW)
+                    }
                 }
+                Text("Other participants")
+                    .font(.system(size: cardW * 0.03, weight: .medium))
+                    .foregroundStyle(.black.opacity(0.6))
             }
-            Text("Other participants")
-                .font(.system(size: cardW * 0.03, weight: .medium))
-                .foregroundStyle(.black.opacity(0.6))
         }
+    }
+
+    // A single participant avatar — same circle style as before, now colour + initial.
+    private func participantBadge(color: Color, text: String, cardW: CGFloat) -> some View {
+        Circle()
+            .fill(color)
+            .frame(width: cardW * 0.12, height: cardW * 0.12)
+            .overlay(Circle().stroke(.black, lineWidth: 1.5))
+            .overlay(
+                Text(text)
+                    .font(.system(size: cardW * 0.05, weight: .bold))
+                    .foregroundStyle(.white)
+            )
     }
 
     // MARK: - Action button
