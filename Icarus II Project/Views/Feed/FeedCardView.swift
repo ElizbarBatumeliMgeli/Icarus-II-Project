@@ -165,6 +165,7 @@ struct FeedCardView: View {
         }
         .frame(width: width, height: height)
         .compositingGroup()
+        .geometryGroup()   // keep all content (incl. text) locked to the card's transform as one unit
         .offset(x: offset.width, y: offset.height + (isDragging ? 0 : idleOffsetY))
         .rotationEffect(.degrees(rotation + (isDragging ? 0 : idleRotation)))
         .scaleEffect(isDragging ? 1 : idleScale)

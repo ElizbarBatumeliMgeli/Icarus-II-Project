@@ -81,6 +81,7 @@ struct MainFeedView: View {
                                     width: cardWidth,
                                     height: cardHeight
                                 )
+                                .id(second.id)   // stable identity per card (no content interpolation on swap)
                                 .zIndex(0)
                             }
 
@@ -99,6 +100,7 @@ struct MainFeedView: View {
                                         }
                                     }
                                 )
+                                .id(first.id)    // stable identity per card (no content interpolation on swap)
                                 .zIndex(10)
                             }
                         }
