@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal – Privacy Policy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --dark: #0e0e10;
+    --dot-bg: #111114;
+    --card-white: #ffffff;
+    --card-border: #2563ff;
+    --card-border-thick: 3px;
+    --card-radius: 22px;
+    --purple-bg: #7c3aed;
+    --blue: #2563ff;
+    --blue-dim: rgba(37,99,255,0.18);
+    --green: #22c55e;
+    --green-btn: #16a34a;
+    --red-btn: #dc2626;
+    --gray-btn: #3f3f46;
+    --text-dark: #111114;
+    --text-white: #ffffff;
+    --muted: rgba(255,255,255,0.45);
+    --very-muted: rgba(255,255,255,0.2);
+    --border-subtle: rgba(255,255,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    background: var(--dark);
+    color: var(--text-white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* Dotted bg — exactly like the app */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+    background-size: 22px 22px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Confetti field */
+  #confetti {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .cdot {
+    position: absolute;
+    border-radius: 3px;
+    animation: cfloat linear infinite;
+  }
+  @keyframes cfloat {
+    0%   { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-40px) rotate(200deg); }
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: rgba(14,14,16,0.88);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .nav-logo {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  .nav-badge {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 5rem 2rem 3.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+    border: 1px solid rgba(37,99,255,0.35);
+    background: rgba(37,99,255,0.1);
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 1.4rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 4.2rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--blue);
+  }
+  .hero-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* CONTAINER */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.25rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* =============================================
+     APP-STYLE CARD — white card with thick blue border
+     mimicking exactly the cards in the screenshot
+     ============================================= */
+  .app-card {
+    position: relative;
+    background: var(--card-white);
+    border: var(--card-border-thick) solid var(--card-border);
+    border-radius: var(--card-radius);
+    padding: 2rem 2.25rem 2.25rem;
+    color: var(--text-dark);
+    /* Subtle tilt on hover like the app's swipe feel */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .app-card:hover {
+    transform: rotate(-0.4deg) translateY(-3px);
+    box-shadow: 0 20px 60px rgba(37,99,255,0.22);
+  }
+
+  /* Section label inside card */
+  .card-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .app-card h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.1rem;
+    color: var(--text-dark);
+    line-height: 1.2;
+  }
+  .app-card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-dark);
+    margin: 1.35rem 0 0.5rem;
+  }
+  .app-card h3:first-of-type { margin-top: 0.3rem; }
+  .app-card p {
+    font-size: 0.92rem;
+    color: rgba(17,17,20,0.65);
+    line-height: 1.75;
+    margin-bottom: 0.9rem;
+  }
+  .app-card p:last-child { margin-bottom: 0; }
+  .app-card strong { color: var(--text-dark); font-weight: 600; }
+  .app-card a { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .app-card a:hover { text-decoration: underline; }
+  .app-card code {
+    background: rgba(17,17,20,0.05);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    color: var(--text-dark);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Plain bulleted list inside a white card */
+  .card-list { list-style: none; display: flex; flex-direction: column; gap: 7px; margin: 0.65rem 0 0.4rem; }
+  .card-list li {
+    font-size: 0.88rem;
+    color: rgba(17,17,20,0.62);
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    line-height: 1.55;
+  }
+  .card-list li::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    background: var(--blue);
+    flex-shrink: 0;
+    margin-top: 7px;
+  }
+  .card-list.green li::before { background: var(--green-btn); }
+
+  /* Detailed data table inside a white card */
+  .data-table { width: 100%; border-collapse: collapse; margin: 0.7rem 0 0.4rem; font-size: 0.8rem; }
+  .data-table th, .data-table td {
+    border: 1px solid rgba(17,17,20,0.1);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .data-table th {
+    background: rgba(37,99,255,0.07);
+    color: var(--blue);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .data-table td { color: rgba(17,17,20,0.62); line-height: 1.5; }
+  @media (max-width: 560px) {
+    .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+    .data-table thead { display: none; }
+    .data-table tr { border: 1px solid rgba(17,17,20,0.12); border-radius: 12px; padding: 0.4rem; margin-bottom: 0.7rem; }
+    .data-table td { border: none; padding: 4px 8px; }
+    .data-table td::before { content: attr(data-label); display: block; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue); margin-bottom: 1px; }
+  }
+
+  /* Card authored-by line — like "By Marco Rocco" in the screenshot */
+  .card-author {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(17,17,20,0.08);
+    font-size: 0.72rem;
+    color: rgba(17,17,20,0.35);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  /* INTRO card — slightly different: purple tint like the "match" screen */
+  .app-card.purple-card {
+    background: #fff;
+    border-color: var(--purple-bg);
+  }
+  .app-card.purple-card:hover {
+    box-shadow: 0 20px 60px rgba(124,58,237,0.25);
+  }
+  .app-card.purple-card .card-label { color: var(--purple-bg); }
+  .app-card.purple-card h2 { color: var(--text-dark); }
+
+  /* Split list */
+  .split-lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 500px) { .split-lists { grid-template-columns: 1fr; } }
+
+  .list-col h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+    margin-top: 0;
+  }
+  .list-col.yes h3 { color: var(--blue); }
+  .list-col.no  h3 { color: #16a34a; }
+
+  .list-col ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .list-col li {
+    font-size: 0.86rem;
+    color: rgba(17,17,20,0.6);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .list-col li::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .list-col.yes li::before { background: var(--blue); }
+  .list-col.no  li::before { background: #16a34a; }
+
+  /* Tag pills inside white card */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 0.85rem; }
+  .tag {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1.5px solid;
+  }
+  .tag.blue  { border-color: var(--blue);    color: var(--blue);    background: rgba(37,99,255,0.07); }
+  .tag.red   { border-color: #dc2626;        color: #dc2626;        background: rgba(220,38,38,0.07); }
+  .tag.green { border-color: #16a34a;        color: #16a34a;        background: rgba(22,163,74,0.07); }
+  .tag.purple{ border-color: var(--purple-bg); color: var(--purple-bg); background: rgba(124,58,237,0.07); }
+  .tag.gray  { border-color: rgba(17,17,20,0.2); color: rgba(17,17,20,0.5); background: rgba(17,17,20,0.04); }
+
+  /* Divider inside white card */
+  .card-divider {
+    height: 1px;
+    background: rgba(17,17,20,0.08);
+    margin: 1.1rem 0;
+  }
+
+  /* Security mini-cards */
+  .sec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+  }
+  .sec-item {
+    background: rgba(37,99,255,0.06);
+    border: 1.5px solid rgba(37,99,255,0.2);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+  }
+  .sec-item .si-icon { font-size: 1.3rem; margin-bottom: 0.4rem; display: block; }
+  .sec-item .si-label { font-size: 0.85rem; font-weight: 700; color: var(--text-dark); display: block; }
+  .sec-item .si-desc  { font-size: 0.76rem; color: rgba(17,17,20,0.5); margin-top: 2px; }
+
+  /* Contact name chips */
+  .people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.85rem;
+  }
+  .person-chip {
+    border: 1px solid rgba(17,17,20,0.12);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.83rem;
+    font-weight: 500;
+    color: rgba(17,17,20,0.65);
+    text-align: center;
+  }
+
+  .email-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1.1rem;
+    padding: 10px 20px;
+    background: var(--text-dark);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .email-btn:hover { opacity: 0.8; }
+
+  /* =============================================
+     THREE BOTTOM BUTTONS — exact copy of app UI
+     red dislike / gray shuffle / green like
+     ============================================= */
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 2.5rem 0 0;
+  }
+  .btn-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    flex-shrink: 0;
+  }
+  .btn-circle:hover  { transform: scale(1.1); }
+  .btn-circle:active { transform: scale(0.93); }
+
+  .btn-red {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: #dc2626;
+    box-shadow: 0 6px 24px rgba(220,38,38,0.45);
+  }
+  .btn-gray {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: #3f3f46;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .btn-green {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: #16a34a;
+    box-shadow: 0 6px 24px rgba(22,163,74,0.45);
+  }
+
+  .btn-circle svg {
+    width: 22px; height: 22px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .btn-gray svg { width: 18px; height: 18px; }
+
+  /* "IT'S A DEAL" final card — purple bg like match screen */
+  .deal-final {
+    background: linear-gradient(145deg, #7c3aed 0%, #4f46e5 100%);
+    border: none;
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .deal-final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .deal-final-inner {
+    position: relative;
+    z-index: 1;
+  }
+  /* The "IT'S A DEAL!" white tilted card inside */
+  .deal-sticker {
+    display: inline-block;
+    background: #fff;
+    color: #111;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding: 10px 28px;
+    border-radius: 12px;
+    transform: rotate(-4deg);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    margin-bottom: 1.25rem;
+  }
+  .deal-final p {
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.7);
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.78rem;
+    color: var(--very-muted);
+  }
+  footer strong { color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .app-card { padding: 1.4rem 1.25rem 1.75rem; }
+    nav { padding: 0.9rem 1rem; }
+    .hero { padding: 3.5rem 1.25rem 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="confetti" aria-hidden="true"></div>
+
+<nav>
+  <span class="nav-logo">Deal</span>
+  <span class="nav-badge">by IcarusII</span>
+</nav>
+
+<div class="hero">
+  <span class="hero-eyebrow">Legal</span>
+  <h1>Privacy<br><em>Policy</em></h1>
+  <p class="hero-date">Last updated: June 5, 2026</p>
+</div>
+
+<div class="container">
+
+  <!-- INTRO -->
+  <div class="app-card purple-card">
+    <span class="card-label">Welcome</span>
+    <h2>Deal, by IcarusII</h2>
+    <p>We respect your privacy and are committed to protecting your personal information. This policy explains, in detail, what data Deal collects, why, where it is stored, who can see it, and the rights and choices you have.</p>
+    <div class="card-author">icarus.ii.studio@gmail.com</div>
+  </div>
+
+  <!-- 01 WHO WE ARE -->
+  <div class="app-card">
+    <span class="card-label">Section 01</span>
+    <h2>Who We Are</h2>
+    <p>Deal is developed by <strong>IcarusII Studio</strong>, which acts as the data controller for your information. For any privacy question or request, contact us at <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 02 INFORMATION WE COLLECT -->
+  <div class="app-card">
+    <span class="card-label">Section 02</span>
+    <h2>Information We Collect</h2>
+    <p>Deal stores only the data needed to run the app. Here is everything we actually collect and store.</p>
+
+    <h3>Account &amp; profile data</h3>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data</th><th>Source</th><th>Where it is stored</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Data">Apple user identifier</td>
+          <td data-label="Source">Sign in with Apple</td>
+          <td data-label="Stored">Firebase Authentication &amp; device Keychain</td>
+          <td data-label="Why">To identify your account and keep you signed in</td>
+        </tr>
+        <tr>
+          <td data-label="Data">First &amp; last name</td>
+          <td data-label="Source">Sign in with Apple (provided once)</td>
+          <td data-label="Stored">Firebase Firestore; cached on device</td>
+          <td data-label="Why">Shown on your profile and cards so connections recognise you</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Avatar colour</td>
+          <td data-label="Source">Generated / chosen in-app</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">Visual identity in the app</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Connection code</td>
+          <td data-label="Source">Generated in-app</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">A shareable code so others can connect with you</td>
+        </tr>
+        <tr>
+          <td data-label="Data">Your connections list</td>
+          <td data-label="Source">Created when you connect with someone</td>
+          <td data-label="Stored">Firebase Firestore</td>
+          <td data-label="Why">Determines whose cards appear in your feed</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Content you create (cards)</h3>
+    <p>When you create a card describing something you want to do, we store the text you enter: the title, a category tag, the location text you type in the “Where?” field, the dates you choose, and an accent colour.</p>
+    <p><strong>Note:</strong> the location is free text that you type — Deal does not read your GPS or device location.</p>
+
+    <h3>Email address</h3>
+    <p>When you sign in, Apple’s screen may ask whether you want to share your email with Deal. <strong>Even if you choose to share it, Deal does not store or use your email address.</strong> The app does not save it to our servers, and the team has no access to it. To get back into your account, you simply sign in with Apple again.</p>
+
+    <h3>Interaction data (matches)</h3>
+    <p>When you swipe on a card, we record the action so the app works correctly. Each record links the card, its owner, you, the result (matched or dismissed), and a timestamp. This lets us show your matches and avoid showing you the same card twice.</p>
+
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 03 WHAT WE NEVER COLLECT -->
+  <div class="app-card">
+    <span class="card-label">Section 03</span>
+    <h2>What We Never Collect</h2>
+    <div class="split-lists">
+      <div class="list-col no">
+        <h3>We never collect</h3>
+        <ul>
+          <li>Phone numbers</li>
+          <li>GPS / device location</li>
+          <li>Photos or videos</li>
+          <li>Contacts</li>
+        </ul>
+      </div>
+      <div class="list-col no">
+        <h3>&nbsp;</h3>
+        <ul>
+          <li>Payment info</li>
+          <li>Advertising identifiers</li>
+          <li>Analytics / crash data</li>
+          <li>Your email address</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 04 VISIBLE TO OTHERS -->
+  <div class="app-card">
+    <span class="card-label">Section 04</span>
+    <h2>Information Visible to Other Users</h2>
+    <p>Deal is a social app, so some of your data is shown to other people by design:</p>
+    <ul class="card-list">
+      <li><strong>Your cards</strong> (title, category, location text, dates) are shown in the feed of users you are connected to.</li>
+      <li><strong>Your name and avatar colour</strong> are shown to people you connect with and people you match with.</li>
+      <li><strong>Your connection code</strong> is visible only when you choose to share it.</li>
+    </ul>
+    <p>People you are <strong>not</strong> connected to cannot see your cards.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 05 HOW WE USE -->
+  <div class="app-card">
+    <span class="card-label">Section 05</span>
+    <h2>How We Use Your Information</h2>
+    <p>We use your data solely to operate the app:</p>
+    <div class="tag-row">
+      <span class="tag blue">Create &amp; manage account</span>
+      <span class="tag blue">Sign in with Apple</span>
+      <span class="tag blue">Build your feed</span>
+      <span class="tag blue">Record matches</span>
+      <span class="tag blue">Connect with users</span>
+    </div>
+    <div class="card-divider"></div>
+    <p style="font-size:0.82rem; color:rgba(17,17,20,0.4); margin-bottom:0.5rem;">We do not use your data for:</p>
+    <div class="tag-row">
+      <span class="tag red">Advertising</span>
+      <span class="tag red">Profiling</span>
+      <span class="tag red">3rd-party tracking</span>
+      <span class="tag red">Personalized ads</span>
+    </div>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 06 AUTH -->
+  <div class="app-card">
+    <span class="card-label">Section 06</span>
+    <h2>Authentication</h2>
+    <p>Deal supports authentication exclusively through <strong>Sign in with Apple</strong>, provided by Apple Inc. We never see, handle, or store your Apple password. Sign-in is verified using a one-time nonce.</p>
+    <div class="tag-row">
+      <span class="tag gray">Sign in with Apple</span>
+    </div>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 07 STORAGE & SECURITY -->
+  <div class="app-card">
+    <span class="card-label">Section 07</span>
+    <h2>Data Storage &amp; Security</h2>
+    <p>Your data is stored using <strong>Google Firebase</strong> (Authentication and Cloud Firestore) and is encrypted in transit. On your device, your Apple user ID is stored in the secure Keychain and a small profile cache is kept in app storage.</p>
+    <div class="sec-grid">
+      <div class="sec-item">
+        <span class="si-icon">🔒</span>
+        <span class="si-label">HTTPS</span>
+        <div class="si-desc">Encrypted in transit</div>
+      </div>
+      <div class="sec-item">
+        <span class="si-icon">🔐</span>
+        <span class="si-label">Keychain</span>
+        <div class="si-desc">Secure on-device storage</div>
+      </div>
+      <div class="sec-item">
+        <span class="si-icon">☁️</span>
+        <span class="si-label">Firebase</span>
+        <div class="si-desc">Google infrastructure</div>
+      </div>
+    </div>
+    <p style="margin-top:1rem; font-size:0.8rem; color:rgba(17,17,20,0.38);">No digital platform can guarantee absolute security.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 08 DELETION -->
+  <div class="app-card">
+    <span class="card-label">Section 08</span>
+    <h2>Account &amp; Data Deletion</h2>
+
+    <h3>Deleting your account in the app</h3>
+    <p>You can start deleting your account directly in the app from <strong>Profile → Delete account</strong>. Confirming this immediately signs you out and sends a deletion request to our team. We then permanently remove your profile (name, avatar colour, connection code, connections), all cards you created, all match and dismissal records linked to you, your authentication account, and the data cached on your device. Deletion is completed within <strong>30 days</strong> and cannot be undone.</p>
+
+    <h3>Automatic deletion</h3>
+    <p>If you do not make any new match for <strong>12 months</strong>, all of your data is automatically deleted and is no longer stored anywhere, unless retention is required by law.</p>
+
+    <h3>Requesting deletion by email</h3>
+    <p>You can also request deletion at any time by contacting the team at <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 09 LEGAL BASIS -->
+  <div class="app-card">
+    <span class="card-label">Section 09</span>
+    <h2>Legal Basis for Processing</h2>
+    <p>For users in the European Economic Area (EEA) / UK, we process your data on these legal bases:</p>
+    <ul class="card-list">
+      <li><strong>Performance of a contract</strong> — to create your account and provide the app’s core features.</li>
+      <li><strong>Consent</strong> — for optional sharing you choose, such as sharing your connection code. You can withdraw consent at any time.</li>
+      <li><strong>Legitimate interest</strong> — to keep the service working and secure (e.g. not showing you the same card twice).</li>
+    </ul>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 10 YOUR RIGHTS -->
+  <div class="app-card">
+    <span class="card-label">Section 10</span>
+    <h2>Your Rights</h2>
+    <p>Depending on where you live (e.g. under GDPR or similar laws), you have the right to:</p>
+    <ul class="card-list">
+      <li>Access the personal data we hold about you</li>
+      <li>Correct inaccurate data (you can edit your name, cards, and profile in-app)</li>
+      <li>Delete your data (see Section 08)</li>
+      <li>Receive a copy of your data in a portable format</li>
+      <li>Restrict or object to certain processing</li>
+      <li>Withdraw consent at any time</li>
+      <li>Lodge a complaint with your local data protection authority</li>
+    </ul>
+    <p>To exercise any of these, contact <a href="mailto:icarus.ii.studio@gmail.com">icarus.ii.studio@gmail.com</a>.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 11 RETENTION -->
+  <div class="app-card">
+    <span class="card-label">Section 11</span>
+    <h2>Data Retention</h2>
+    <ul class="card-list">
+      <li>Profile and account data are kept while your account is active.</li>
+      <li>Cards and matches relating to an event are hidden from the app after the event date has passed.</li>
+      <li>If you make no new match for <strong>12 months</strong>, all your data is automatically deleted.</li>
+      <li>You can delete your account earlier from within the app, or by contacting the team — see Section 08.</li>
+    </ul>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 12 INTERNATIONAL TRANSFERS -->
+  <div class="app-card">
+    <span class="card-label">Section 12</span>
+    <h2>International Data Transfers</h2>
+    <p>Deal uses Google Firebase, which may store and process data on servers located outside your country, including outside the EEA. Where required, such transfers rely on appropriate safeguards (e.g. Standard Contractual Clauses). See Google’s privacy documentation for details on Firebase data handling.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 13 THIRD-PARTY -->
+  <div class="app-card">
+    <span class="card-label">Section 13</span>
+    <h2>Third-Party Services</h2>
+    <p>Deal relies on third-party infrastructure required for functionality. These providers process only the data needed to operate the app. We do not sell your data or share it with advertisers.</p>
+    <div class="tag-row">
+      <span class="tag purple">Firebase by Google</span>
+      <span class="tag gray">Sign in with Apple</span>
+    </div>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 14 CHILDREN -->
+  <div class="app-card">
+    <span class="card-label">Section 14</span>
+    <h2>Children’s Privacy</h2>
+    <p>Deal is not directed toward children under the age of <strong>13</strong>. If we become aware that data from children under 13 has been collected without parental consent, we will take steps to remove it promptly.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 15 CHANGES -->
+  <div class="app-card">
+    <span class="card-label">Section 15</span>
+    <h2>Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. Material changes will be posted within the app or through official channels, and the “Last updated” date will change. We encourage you to review this page periodically.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- 16 GOVERNING LAW -->
+  <div class="app-card">
+    <span class="card-label">Section 16</span>
+    <h2>Governing Law</h2>
+    <p>This policy is governed by the laws of Italy and applicable European Union data protection law.</p>
+    <div class="card-author">By IcarusII Developers</div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="app-card">
+    <span class="card-label">Contact</span>
+    <h2>Contact Us</h2>
+    <p>Questions or requests regarding this Privacy Policy? Reach out to the IcarusII team:</p>
+    <div class="people-grid">
+      <div class="person-chip">Carlo D’Aveni</div>
+      <div class="person-chip">Gianluca Pascarella</div>
+      <div class="person-chip">Marco Rocco</div>
+      <div class="person-chip">Luigi Viggiano</div>
+      <div class="person-chip">Elzibar Kheladze</div>
+      <div class="person-chip">Aleksandra Stupiec</div>
+    </div>
+    <a class="email-btn" href="mailto:icarus.ii.studio@gmail.com">
+      ✉ icarus.ii.studio@gmail.com
+    </a>
+    <div class="card-author">IcarusII Studio</div>
+  </div>
+
+  <!-- IT'S A DEAL final -->
+  <div class="deal-final">
+    <div class="deal-final-inner">
+      <div class="deal-sticker">IT’S A DEAL!</div>
+      <p>We keep it simple, honest, and private. Your trust matters to us.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>Deal</strong> by IcarusII &nbsp;·&nbsp; Privacy Policy &nbsp;·&nbsp; Last updated June 5, 2026
+</footer>
+
+<script>
+  const field = document.getElementById('confetti');
+  const colors = ['#ef4444','#22c55e','#3b82f6','#eab308','#8b5cf6','#f97316','#ec4899','#06b6d4'];
+  for (let i = 0; i < 48; i++) {
+    const d = document.createElement('div');
+    d.className = 'cdot';
+    const size = Math.random() * 9 + 6;
+    const isRound = Math.random() > 0.45;
+    d.style.cssText = [
+      `width:${size}px`,
+      `height:${size}px`,
+      `background:${colors[Math.floor(Math.random() * colors.length)]}`,
+      `left:${Math.random() * 100}%`,
+      `top:${Math.random() * 100}%`,
+      `border-radius:${isRound ? '50%' : '3px'}`,
+      `animation-duration:${(Math.random() * 7 + 5).toFixed(1)}s`,
+      `animation-delay:${(Math.random() * 5).toFixed(1)}s`,
+      `opacity:${(Math.random() * 0.45 + 0.2).toFixed(2)}`,
+    ].join(';');
+    field.appendChild(d);
+  }
+</script>
+</body>
+</html>
