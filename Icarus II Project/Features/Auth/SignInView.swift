@@ -18,10 +18,6 @@ struct SignInView: View {
             DottedBackground()
             VStack(spacing: 30) {
                 VStack(spacing: 16) {
-                    Image(systemName: "applelogo")
-                        .font(.system(size: 60))
-                        .foregroundStyle(Color.white)
-                    
                     Text("Create Account")
                         .font(.title.bold())
                         .foregroundStyle(Color.white)
