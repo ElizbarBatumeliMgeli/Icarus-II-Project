@@ -10,27 +10,38 @@ import SwiftUI
 struct EmptyFeedView: View {
     let width: CGFloat
     let height: CGFloat
-    
+
+    // When true, shows the one-time "connect & make a DEAL!" prompt (with a share
+    // button) instead of the default "you swiped through all the cards" message.
+    // The spotlight beams stay the same in both variants.
+    var showConnectPrompt: Bool = false
+    var shareLink: URL? = nil
+    var shareCode: String? = nil
+
     @State private var isAnimating = false
-    
+
     var body: some View {
         ZStack {
             SpotlightBeam(width: width, height: height, angle: isAnimating ? 12 : -14, intensity: 0.95)
                 .offset(x: -width * 0.25)
-                
-            
+
+
             SpotlightBeam(width: width, height: height, angle: isAnimating ? -10 : 16, intensity: 0.8)
                 .offset(x: width * 0.25)
-            
-            Text("You swiped through all the cards…\nIt’s time to plan!!")
-                .font(.custom("Nohemi-Medium", fixedSize: 30))
-                .foregroundStyle(.white)
-                .multilineTextAlignment(.center)
-                .lineLimit(4)
-                .minimumScaleFactor(0.7)
-                .frame(width: width * 0.8)
-                .shadow(color: .black.opacity(0.6), radius: 12, x: 0, y: 6)
-                .offset(y: height * 0.05)
+
+            if showConnectPrompt {
+                connectPrompt
+            } else {
+                Text("You swiped through all the cards…\nIt’s time to plan!!")
+                    .font(.custom("Nohemi-Medium", fixedSize: 30))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
+                    .minimumScaleFactor(0.7)
+                    .frame(width: width * 0.8)
+                    .shadow(color: .black.opacity(0.6), radius: 12, x: 0, y: 6)
+                    .offset(y: height * 0.05)
+            }
         }
         .frame(width: width, height: height)
         .allowsTightening(false)
@@ -39,6 +50,37 @@ struct EmptyFeedView: View {
                 isAnimating = true
             }
         }
+    }
+
+    // The one-time post-onboarding prompt: catchy text + the same share button as
+    // the profile (icarus://connect?code=… invite link).
+    private var connectPrompt: some View {
+        VStack(spacing: height * 0.04) {
+            Text("It’s time to connect and make a DEAL!")
+                .font(.custom("Nohemi-Medium", fixedSize: 30))
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(4)
+                .minimumScaleFactor(0.7)
+                .frame(width: width * 0.8)
+                .shadow(color: .black.opacity(0.6), radius: 12, x: 0, y: 6)
+
+            // Mirrors ProfileDeckView's share control: live ShareLink when the
+            // invite link/code are loaded, inert icon otherwise.
+            if let link = shareLink, let code = shareCode, !code.isEmpty {
+                ShareLink(
+                    item: link,
+                    subject: Text("Connect with me on DEAL!"),
+                    message: Text("Tap to connect with me on DEAL — or enter my code: \(code)")
+                ) {
+                    CircleIconLabel(systemName: "square.and.arrow.up", size: width * 0.16)
+                }
+                .buttonStyle(.plain)
+            } else {
+                CircleIconButton(systemName: "square.and.arrow.up", size: width * 0.16)
+            }
+        }
+        .offset(y: height * 0.05)
     }
 }
 
