@@ -15,6 +15,13 @@ struct MainFeedView: View {
     // Used to refresh the feed when the app returns to the foreground.
     @Environment(\.scenePhase) private var scenePhase
 
+    // Signed-in user's profile — provides the invite link/code for the one-time
+    // post-onboarding "connect & make a DEAL!" prompt. Injected by AppRootView.
+    @Environment(UserViewModel.self) private var userViewModel
+
+    // Shown once, right after onboarding, while the user has no connections yet.
+    @AppStorage("hasSeenConnectPrompt") private var hasSeenConnectPrompt: Bool = false
+
     // Controls the pop-up stamp animation
     @State private var showDealStamp = false
 
@@ -59,7 +66,19 @@ struct MainFeedView: View {
                         LoadingFeedView(cardWidth: cardWidth, cardHeight: cardHeight)
                         Spacer()
                     } else if viewModel.feedCards.isEmpty {
-                        EmptyFeedView(width: width, height: cardHeight)
+                        // First empty feed after onboarding (no connections yet) shows
+                        // the one-time connect prompt; afterwards the normal message.
+                        let showConnect = !hasSeenConnectPrompt && viewModel.user.connections.isEmpty
+                        EmptyFeedView(
+                            width: width,
+                            height: cardHeight,
+                            showConnectPrompt: showConnect,
+                            shareLink: userViewModel.user?.connectionLink,
+                            shareCode: userViewModel.user?.connectionCode
+                        )
+                        .onAppear {
+                            if showConnect { hasSeenConnectPrompt = true }
+                        }
                         Spacer()
                     } else {
                         ZStack {
