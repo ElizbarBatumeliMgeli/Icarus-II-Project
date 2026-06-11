@@ -98,7 +98,6 @@ struct MatchesView: View {
                     Spacer(minLength: 0)
                 }
                 .ignoresSafeArea(edges: .top)
-                .blur(radius: expandedInfo != nil ? 15 : 0) // Blur background when overlay is active
 
                 // Full-screen overlay for expanded card details
                 if let info = expandedInfo {
@@ -337,7 +336,6 @@ private struct ExpandedMatchOverlay: View {
             .padding(.horizontal, cardW * 0.09)
         }
         .frame(width: cardW, height: cardH)
-        .compositingGroup()
     }
 
     private func feedCategoryPill(_ text: String, cardW: CGFloat, cardH: CGFloat, color: Color) -> some View {
@@ -411,7 +409,7 @@ private struct ExpandedMatchOverlay: View {
                 .frame(height: width * 0.15)
                 .background(background)
                 .clipShape(RoundedRectangle(cornerRadius: width * 0.045))
-                .shadow(color: .white, radius: width * 1.1)
+                .shadow(color: .white.opacity(0.6), radius: width * 0.08)
                 .overlay(
                     RoundedRectangle(cornerRadius: width * 0.045)
                         .stroke(.black, lineWidth: 2)
@@ -422,14 +420,19 @@ private struct ExpandedMatchOverlay: View {
 
     // MARK: - Idle float (same as FeedCardView)
     private func startIdle() {
-        withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
-            idleOffsetY = -height * 0.018
-        }
-        withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
-            idleRotation = 1.5
-        }
-        withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-            idleScale = 1.012
+        // Delay the repeating animation until after the presentation transition finishes.
+        // Starting repeatForever animations while a parent transition is active causes 
+        // CoreAnimation render tree crashes, especially under load (e.g. screen recording).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: true)) {
+                idleOffsetY = -height * 0.018
+            }
+            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
+                idleRotation = 1.5
+            }
+            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                idleScale = 1.012
+            }
         }
     }
 }

@@ -19,9 +19,6 @@ struct MainFeedView: View {
     // post-onboarding "connect & make a DEAL!" prompt. Injected by AppRootView.
     @Environment(UserViewModel.self) private var userViewModel
 
-    // Shown once, right after onboarding, while the user has no connections yet.
-    @AppStorage("hasSeenConnectPrompt") private var hasSeenConnectPrompt: Bool = false
-
     // Controls the pop-up stamp animation
     @State private var showDealStamp = false
 
@@ -68,7 +65,7 @@ struct MainFeedView: View {
                     } else if viewModel.feedCards.isEmpty {
                         // First empty feed after onboarding (no connections yet) shows
                         // the one-time connect prompt; afterwards the normal message.
-                        let showConnect = !hasSeenConnectPrompt && viewModel.user.connections.isEmpty
+                        let showConnect = viewModel.user.connections.isEmpty
                         EmptyFeedView(
                             width: width,
                             height: cardHeight,
@@ -76,9 +73,6 @@ struct MainFeedView: View {
                             shareLink: userViewModel.user?.connectionLink,
                             shareCode: userViewModel.user?.connectionCode
                         )
-                        .onAppear {
-                            if showConnect { hasSeenConnectPrompt = true }
-                        }
                         Spacer()
                     } else {
                         ZStack {
@@ -142,7 +136,7 @@ struct MainFeedView: View {
 //                                viewModel.shuffle()
 //                            }
                             
-                            Spacer()
+//                            Spacer()
 
                             PhysicalHeartButton(size: iconSize) {
                                 if let card = viewModel.feedCards.first {
